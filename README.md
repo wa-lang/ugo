@@ -2,9 +2,8 @@
 
 µGo 是 Go 语言的真子集(不含标准库部分), 可以直接作为Go代码编译执行.
 
-删除的Go语言特性(删除9个关键字):
+删除Go语言中9个关键字:
 
-- 删除复数类型
 - 删除并发: go
 - 删除管道: chan, select
 - 删除多分支: switch, case, fallthrough, default
