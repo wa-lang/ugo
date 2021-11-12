@@ -86,19 +86,17 @@ const (
 
 	keyword_beg
 	// Keywords
+	PACKAGE
 	IMPORT
 
 	CONST
 	TYPE
 	VAR
+	FUNC
 
 	STRUCT
 	MAP
 	INTERFACE
-
-	FUNC
-	RETURN
-	DEFER
 
 	IF
 	ELSE
@@ -106,6 +104,10 @@ const (
 	FOR
 	CONTINUE
 	BREAK
+
+	RETURN
+	DEFER
+
 	keyword_end
 
 	_IMAG // 123.45i
@@ -192,25 +194,27 @@ var tokens = [...]string{
 	SEMICOLON: ";",
 	COLON:     ":",
 
-	BREAK:    "break",
-	CONST:    "const",
-	CONTINUE: "continue",
+	PACKAGE: "package",
+	IMPORT:  "import",
 
-	DEFER: "defer",
-	ELSE:  "else",
-	FOR:   "for",
+	CONST: "const",
+	TYPE:  "type",
+	VAR:   "var",
+	FUNC:  "func",
 
-	FUNC:   "func",
-	IF:     "if",
-	IMPORT: "import",
-
-	INTERFACE: "interface",
+	STRUCT:    "struct",
 	MAP:       "map",
-	RETURN:    "return",
+	INTERFACE: "interface",
 
-	STRUCT: "struct",
-	TYPE:   "type",
-	VAR:    "var",
+	IF:   "if",
+	ELSE: "else",
+
+	FOR:      "for",
+	CONTINUE: "continue",
+	BREAK:    "break",
+
+	DEFER:  "defer",
+	RETURN: "return",
 }
 
 // String returns the string corresponding to the token tok.
