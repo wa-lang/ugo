@@ -86,42 +86,43 @@ const (
 
 	keyword_beg
 	// Keywords
-	BREAK
-	CASE
-	CONST
-	CONTINUE
-
-	DEFAULT
-	DEFER
-	ELSE
-	FALLTHROUGH
-	FOR
-
-	FUNC
-	GOTO
-	IF
 	IMPORT
 
-	INTERFACE
-	MAP
-	PACKAGE
-	RANGE
-	RETURN
-
-	STRUCT
-	SWITCH
+	CONST
 	TYPE
 	VAR
 
+	STRUCT
+	MAP
+	INTERFACE
+
+	FUNC
+	RETURN
+	DEFER
+
+	IF
+	ELSE
+
+	FOR
+	CONTINUE
+	BREAK
 	keyword_end
 
 	_IMAG // 123.45i
 
 	_ARROW // <-
 
+	// Keywords
+	_CASE
 	_CHAN
+	_DEFAULT
+	_FALLTHROUGH
 	_GO
+	_GOTO
+	_PACKAGE
+	_RANGE
 	_SELECT
+	_SWITCH
 )
 
 var tokens = [...]string{
@@ -192,29 +193,22 @@ var tokens = [...]string{
 	COLON:     ":",
 
 	BREAK:    "break",
-	CASE:     "case",
 	CONST:    "const",
 	CONTINUE: "continue",
 
-	DEFAULT:     "default",
-	DEFER:       "defer",
-	ELSE:        "else",
-	FALLTHROUGH: "fallthrough",
-	FOR:         "for",
+	DEFER: "defer",
+	ELSE:  "else",
+	FOR:   "for",
 
 	FUNC:   "func",
-	GOTO:   "goto",
 	IF:     "if",
 	IMPORT: "import",
 
 	INTERFACE: "interface",
 	MAP:       "map",
-	PACKAGE:   "package",
-	RANGE:     "range",
 	RETURN:    "return",
 
 	STRUCT: "struct",
-	SWITCH: "switch",
 	TYPE:   "type",
 	VAR:    "var",
 }

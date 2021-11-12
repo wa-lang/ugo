@@ -12,7 +12,7 @@ func (tok Token) IsShouldInsertSemi() bool {
 	}
 
 	switch tok {
-	case BREAK, CONTINUE, FALLTHROUGH, RETURN:
+	case BREAK, CONTINUE, RETURN:
 		return true
 	case INC, DEC:
 		return true
