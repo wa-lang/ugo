@@ -16,7 +16,7 @@ func (l *lexer) run() {
 		case r == '\n':
 			if len(l.items) > 0 {
 				lastTok := l.items[len(l.items)-1].Token
-				if lastTok.IsShouldInsertSemi() {
+				if lastTok.IsShouldInsertSemi() && !l.opt.DontInsertSemi {
 					l.emit(token.SEMICOLON)
 				}
 			}
@@ -211,7 +211,7 @@ func (l *lexer) run() {
 }
 
 func (l *lexer) adjustItems() {
-	if l.skipComment {
+	if l.opt.SkipComment {
 		items := l.items[:0]
 		for _, t := range l.items {
 			if t.Token != token.COMMENT {

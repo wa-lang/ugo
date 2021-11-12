@@ -16,11 +16,16 @@ type Item struct {
 	Pos     token.Pos
 }
 
-func Lex(name, input string, skipComment bool) []Item {
+type Option struct {
+	SkipComment    bool
+	DontInsertSemi bool
+}
+
+func Lex(name, input string, opt Option) []Item {
 	l := &lexer{
-		name:        name,
-		input:       input,
-		skipComment: skipComment,
+		name:  name,
+		input: input,
+		opt:   opt,
 	}
 	l.run()
 	return l.items
@@ -28,13 +33,13 @@ func Lex(name, input string, skipComment bool) []Item {
 
 // lexer holds the state of the scanner.
 type lexer struct {
-	skipComment bool
-	name        string // used only for error reports.
-	input       string // the string being scanned.
-	start       int    // start position of this item.
-	pos         int    // current position in the input.
-	width       int    // width of last rune read from input.
-	items       []Item // channel of scanned items.
+	opt   Option
+	name  string // used only for error reports.
+	input string // the string being scanned.
+	start int    // start position of this item.
+	pos   int    // current position in the input.
+	width int    // width of last rune read from input.
+	items []Item // channel of scanned items.
 }
 
 // next returns the next rune in the input.
