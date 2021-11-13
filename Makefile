@@ -1,4 +1,4 @@
 default:
-	echo -n "1+2*3" | go run main.go
+	go run main.go -lex -ast -llir -file=hello.ugo
 
 clean:

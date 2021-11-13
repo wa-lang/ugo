@@ -30,6 +30,7 @@ func (p *Compiler) genValue(w io.Writer, node ast.Expr) (id string) {
 	if node == nil {
 		return ""
 	}
+	id = p.genId()
 	switch node := node.(type) {
 	case *ast.Number:
 		fmt.Fprintf(w, "\t%[1]s = add i32 0, %[2]v; %[1]s = %[2]v\n",

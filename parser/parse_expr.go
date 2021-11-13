@@ -4,10 +4,13 @@ import (
 	"fmt"
 
 	"github.com/chai2010/ugo/ast"
+	"github.com/chai2010/ugo/logger"
 	"github.com/chai2010/ugo/token"
 )
 
 func (p *parser) parseExpr() ast.Expr {
+	logger.Debugln("parseExpr: peek =", p.peek())
+
 	expr := p.parseExpr_mul()
 	for {
 		switch p.peekToken() {
@@ -42,9 +45,12 @@ func (p *parser) parseExpr_mul() ast.Expr {
 }
 
 func (p *parser) parseExpr_primary() ast.Expr {
-	switch peek := p.peek(); peek.Token {
+	peek := p.peek()
+
+	logger.Debugf("parseExpr_primary: peek = %v\n", peek)
+
+	switch peek.Token {
 	case token.INT:
-		p.next()
 		switch tok := p.next(); tok.Token {
 		case token.INT:
 			return &ast.Number{
@@ -64,7 +70,7 @@ func (p *parser) parseExpr_primary() ast.Expr {
 		p.next()
 		return expr
 	default:
-		p.errorf("todo")
+		p.errorf("todo: peek=%v", peek)
 		panic(p.err)
 	}
 }

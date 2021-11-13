@@ -5,6 +5,7 @@ import (
 
 	"github.com/chai2010/ugo/ast"
 	"github.com/chai2010/ugo/lexer"
+	"github.com/chai2010/ugo/logger"
 	"github.com/chai2010/ugo/token"
 )
 
@@ -12,7 +13,7 @@ type Option struct {
 	Debug bool
 }
 
-func ParseFile(filename string, src []byte, opt Option) (*ast.File, error) {
+func ParseFile(filename, src string, opt Option) (*ast.File, error) {
 	p := &parser{
 		filename: filename,
 		src:      src,
@@ -22,20 +23,23 @@ func ParseFile(filename string, src []byte, opt Option) (*ast.File, error) {
 	return p.file, p.err
 }
 
-func ParseExpr(src []byte, opt Option) (ast.Expr, error) {
+func ParseExpr(filename, src string, opt Option) (ast.Expr, error) {
+	logger.Debugln("ParseExpr:", string(src))
+
 	p := &parser{
-		filename: "expr",
+		filename: filename,
 		src:      src,
 		opt:      opt,
+		input:    lexer.Lex(filename, string(src), lexer.Option{}),
 	}
-	p.parseExpr()
+	p.expr = p.parseExpr()
 	return p.expr, p.err
 }
 
 type parser struct {
 	opt      Option
 	filename string
-	src      []byte
+	src      string
 
 	input []lexer.Item // the tokens being parsed.
 	start int          // start position of this item.
