@@ -1,6 +1,8 @@
 package parser
 
 import (
+	"fmt"
+
 	"github.com/chai2010/ugo/ast"
 	"github.com/chai2010/ugo/lexer"
 	"github.com/chai2010/ugo/token"
@@ -93,9 +95,5 @@ func (p *parser) acceptRun(validTokens ...token.Token) {
 }
 
 func (p *parser) errorf(format string, args ...interface{}) {
-	//l.items = append(l.items, Item{
-	//	Token:   token.ILLEGAL,
-	//	Literal: fmt.Sprintf(format, args...),
-	//	Pos:     token.Pos(l.start + 1),
-	//})
+	p.err = fmt.Errorf(format, args...)
 }

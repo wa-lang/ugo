@@ -64,7 +64,7 @@ func (p *parser) parseExpr_primary() ast.Expr {
 		p.next()
 		return expr
 	default:
-		p.err = fmt.Errorf("todo")
+		p.errorf("todo")
 		panic(p.err)
 	}
 }
