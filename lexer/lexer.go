@@ -10,12 +10,6 @@ import (
 
 const eof = 0
 
-type Item struct {
-	Token   token.Token
-	Literal string
-	Pos     token.Pos
-}
-
 type Option struct {
 	SkipComment    bool
 	DontInsertSemi bool

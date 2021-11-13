@@ -5,7 +5,9 @@ import (
 	"io"
 	"os"
 
+	_ "github.com/chai2010/ugo/compiler"
 	"github.com/chai2010/ugo/lexer"
+	_ "github.com/chai2010/ugo/parser"
 )
 
 func main() {

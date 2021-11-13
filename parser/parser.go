@@ -63,6 +63,10 @@ func (p *parser) peek() lexer.Item {
 	return tok
 }
 
+func (p *parser) peekToken() token.Token {
+	return p.peek().Token
+}
+
 func (p *parser) backup() {
 	p.pos -= p.width
 }
@@ -71,7 +75,7 @@ func (p *parser) ignore() {
 	p.start = p.pos
 }
 
-func (p *parser) accept(validTokens []token.Token) bool {
+func (p *parser) accept(validTokens ...token.Token) bool {
 	tok := p.next()
 	for _, x := range validTokens {
 		if tok.Token == x {
@@ -82,8 +86,8 @@ func (p *parser) accept(validTokens []token.Token) bool {
 	return false
 }
 
-func (p *parser) acceptRun(validTokens []token.Token) {
-	for p.accept(validTokens) {
+func (p *parser) acceptRun(validTokens ...token.Token) {
+	for p.accept(validTokens...) {
 	}
 	p.backup()
 }
