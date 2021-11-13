@@ -13,7 +13,11 @@ type Compiler struct {
 	nextId int
 }
 
-func (p *Compiler) GenLLIR(node ast.Expr) string {
+func (p *Compiler) CompileFile(f *ast.File) string {
+	panic("todo")
+}
+
+func (p *Compiler) CompileExpr(node ast.Expr) string {
 	var buf bytes.Buffer
 	fmt.Fprintf(&buf, "define i32 @main() {\n")
 	fmt.Fprintf(&buf, "\tret i32 %s\n", p.genValue(&buf, node))
