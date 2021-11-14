@@ -22,11 +22,12 @@ func (p *parser) parseConst() {
 	}
 
 	name, ok := p.acceptToken(token.IDENT)
-	if ok {
-		constSpec.Name = &ast.Ident{
-			NamePos: name.Pos,
-			Name:    name.IdentName(),
-		}
+	if !ok {
+		p.errorf("export %v, got = %v", token.IDENT, name)
+	}
+	constSpec.Name = &ast.Ident{
+		NamePos: name.Pos,
+		Name:    name.IdentName(),
 	}
 
 	if typ, ok := p.acceptToken(token.IDENT); ok {

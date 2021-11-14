@@ -88,7 +88,7 @@ func (l *lexer) emit(typ token.TokenType) {
 	tok := token.Token{
 		Type:    typ,
 		Literal: l.input[l.start:l.pos],
-		Pos:     token.Pos(l.pos + 1),
+		Pos:     token.Pos(l.start + 1),
 	}
 
 	if typ == token.IDENT {

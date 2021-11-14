@@ -11,22 +11,17 @@ type File struct {
 
 	Pkg     *PackageSpec  // 包信息
 	Imports []*ImportSpec // 导入包信息
+	Types   []*TypeSpec   // 类型信息
 	Consts  []*ConstSpec  // 常量信息
 	Globals []*VarSpec    // 全局变量
 	Funcs   []*Func       // 函数列表
 }
 
 func (p *File) Pos() token.Pos {
-	//if len(p.List) > 0 {
-	//	return p.List[0].Pos()
-	//}
-	return token.NoPos
+	return token.Pos(1)
 }
 func (p *File) End() token.Pos {
-	//if n := len(p.List); n > 0 {
-	//	return p.List[n-1].End()
-	//}
-	return token.NoPos
+	return token.Pos(1 + len(p.Data))
 }
 
 // Node 表示一个语法树节点.
@@ -52,8 +47,8 @@ type Expr interface {
 // 包信息
 type PackageSpec struct {
 	Doc     *CommentGroup
-	PkgPos  token.Pos // packaage 位置
-	PkgName *Ident    // 包名
+	Pkg     token.Token // packaage 位置
+	PkgName *Ident      // 包名
 }
 
 func (p *PackageSpec) Pos() token.Pos {
@@ -63,11 +58,26 @@ func (p *PackageSpec) End() token.Pos {
 	return token.NoPos
 }
 
+// TypeSpec 表示一个类型信息
+type TypeSpec struct {
+	TypePos token.Pos
+	Assign  token.Pos // =
+	Name    *Ident
+	Type    *Type
+}
+
+func (p *TypeSpec) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *TypeSpec) End() token.Pos {
+	return token.NoPos
+}
+
 // ImportSpec 表示一个导入包
 type ImportSpec struct {
 	ImportPos token.Pos
 	Name      *Ident
-	Path      string
+	Path      *Ident
 }
 
 func (p *ImportSpec) Pos() token.Pos {
@@ -189,20 +199,29 @@ func (p *Ident) End() token.Pos { return p.NamePos + token.Pos(len(p.Name)) }
 
 // Number 表示一个数值.
 type Number struct {
-	ValuePos token.Pos // 数值的开始位置
-	ValueEnd token.Pos // 数值的结束位置
-	Value    int       // 数值
+	ValuePos token.Pos   // 数值的开始位置
+	ValueEnd token.Pos   // 数值的结束位置
+	Value    interface{} // 数值: int/float64/str
 }
 
 func (p *Number) Pos() token.Pos { return p.ValuePos }
 func (p *Number) End() token.Pos { return p.ValueEnd }
 
+func (p *Number) IntValue() int {
+	v, _ := p.Value.(int)
+	return v
+}
+
+func (p *Number) FloatValue() float64 {
+	v, _ := p.Value.(float64)
+	return v
+}
+
 // BinaryExpr 表示一个二元表达式.
 type BinaryExpr struct {
-	X     Expr        // 左边的运算对象
-	OpPos token.Pos   // 运算符的位置
-	Op    token.Token // 运算符
-	Y     Expr        // 右边的运算对象
+	Op token.Token // 运算符
+	X  Expr        // 左边的运算对象
+	Y  Expr        // 右边的运算对象
 }
 
 func (p *BinaryExpr) Pos() token.Pos { return p.X.Pos() }

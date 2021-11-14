@@ -68,7 +68,7 @@ func (p *parser) parsePackage() {
 
 	p.file.Pkg = &ast.PackageSpec{}
 
-	p.file.Pkg.PkgPos = pkg.Pos
+	p.file.Pkg.Pkg = pkg
 	p.file.Pkg.PkgName = &ast.Ident{
 		Name:    ident.IdentName(),
 		NamePos: ident.Pos,

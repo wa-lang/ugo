@@ -64,15 +64,18 @@ func (p *parser) parseExpr_primary() ast.Expr {
 	switch peek.Type {
 	case token.IDENT:
 		ident := p.nextToken()
-		if _, ok := p.acceptToken(token.LPAREN); ok {
+		if lparen, ok := p.acceptToken(token.LPAREN); ok {
 			var args []ast.Expr
 			for {
-				if _, ok := p.acceptToken(token.RPAREN); ok {
+				if rparen, ok := p.acceptToken(token.RPAREN); ok {
 					return &ast.CallExpr{
 						Fun: &ast.Ident{
-							Name: ident.IdentName(),
+							NamePos: ident.Pos,
+							Name:    ident.IdentName(),
 						},
-						Args: args,
+						Lparen: lparen.Pos,
+						Args:   args,
+						Rparen: rparen.Pos,
 					}
 				}
 				args = append(args, p.parseExpr())
@@ -80,18 +83,24 @@ func (p *parser) parseExpr_primary() ast.Expr {
 			}
 		}
 		return &ast.Ident{
-			Name: ident.IdentName(),
+			NamePos: ident.Pos,
+			Name:    ident.IdentName(),
 		}
 	case token.INT:
-		switch tok := p.nextToken(); tok.Type {
-		case token.INT:
-			return &ast.Number{
-				Value: int(tok.IntValue()),
-			}
-		default:
-			p.err = fmt.Errorf("todo")
-			panic(p.err)
+		tok := p.nextToken()
+		return &ast.Number{
+			ValuePos: tok.Pos,
+			Value:    tok.IntValue(),
+			ValueEnd: tok.EndPos(),
 		}
+	case token.FLOAT:
+		tok := p.nextToken()
+		return &ast.Number{
+			ValuePos: tok.Pos,
+			Value:    tok.FloatValue(),
+			ValueEnd: tok.EndPos(),
+		}
+
 	case token.LPAREN:
 		p.nextToken()
 		expr := p.parseExpr()

@@ -32,7 +32,10 @@ func (p *parser) parseImport() {
 	if !ok {
 		return
 	}
-	importSpec.Path = pkgPath.StringValue()
+	importSpec.Path = &ast.Ident{
+		NamePos: pkgPath.Pos,
+		Name:    pkgPath.StringValue(),
+	}
 
 	p.file.Imports = append(p.file.Imports, &importSpec)
 }

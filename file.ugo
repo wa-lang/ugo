@@ -1,3 +1,12 @@
 package main
 
-var x = println(1+2*(3+4) + -10 + double(50))
+import "libc"
+import m "libc.math"
+
+const Pi = 3.14
+const Pi_2 = Pi * 2
+
+type MyInt int
+type MyInt2 = int
+
+var x = println(1 + 2*(3+4) + -10 + double(50))

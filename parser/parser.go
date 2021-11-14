@@ -1,9 +1,8 @@
 package parser
 
 import (
-	"fmt"
-
 	"github.com/chai2010/ugo/ast"
+	"github.com/chai2010/ugo/errors"
 	"github.com/chai2010/ugo/lexer"
 	"github.com/chai2010/ugo/logger"
 	"github.com/chai2010/ugo/token"
@@ -53,7 +52,9 @@ func (p *parser) ParseFile() (file *ast.File, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			// TODO: check err type
+			if errx, ok := r.(*errors.Error); !ok {
+				panic(errx)
+			}
 		}
 		file, err = p.file, p.err
 	}()
@@ -67,7 +68,9 @@ func (p *parser) ParseExpr() (expr ast.Expr, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
-			// TODO: check err type
+			if errx, ok := r.(*errors.Error); !ok {
+				panic(errx)
+			}
 		}
 		expr, err = p.expr, p.err
 	}()
@@ -126,6 +129,7 @@ func (p *parser) acceptTokenRun(validTokens ...token.TokenType) {
 }
 
 func (p *parser) errorf(format string, args ...interface{}) {
-	p.err = fmt.Errorf(format, args...)
+	pos := token.PosString(p.filename, []byte(p.src), token.Pos(p.start+1))
+	p.err = errors.Newf(pos, format, args...)
 	panic(p.err)
 }
