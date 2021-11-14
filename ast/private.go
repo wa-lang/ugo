@@ -17,6 +17,7 @@ var (
 	_ Expr = (*Ident)(nil)
 	_ Expr = (*Number)(nil)
 	_ Expr = (*BinaryExpr)(nil)
+	_ Expr = (*UnaryExpr)(nil)
 	_ Expr = (*ParenExpr)(nil)
 )
 
@@ -30,6 +31,7 @@ func (p *AssignStmt) node_private() {}
 func (p *Ident) node_private()      {}
 func (p *Number) node_private()     {}
 func (p *BinaryExpr) node_private() {}
+func (p *UnaryExpr) node_private()  {}
 func (p *ParenExpr) node_private()  {}
 
 func (p *Comment) node_private()      {}
@@ -43,4 +45,5 @@ func (p *AssignStmt) stmt_private() {}
 func (p *Ident) expr_private()      {}
 func (p *Number) expr_private()     {}
 func (p *BinaryExpr) expr_private() {}
+func (p *UnaryExpr) expr_private()  {}
 func (p *ParenExpr) expr_private()  {}

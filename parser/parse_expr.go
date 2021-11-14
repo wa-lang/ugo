@@ -28,7 +28,7 @@ func (p *parser) parseExpr() ast.Expr {
 }
 
 func (p *parser) parseExpr_mul() ast.Expr {
-	expr := p.parseExpr_primary()
+	expr := p.parseExpr_unary()
 	for {
 		switch p.peekToken() {
 		case token.MUL, token.QUO:
@@ -36,12 +36,24 @@ func (p *parser) parseExpr_mul() ast.Expr {
 			expr = &ast.BinaryExpr{
 				X:  expr,
 				Op: tok.Token,
-				Y:  p.parseExpr_primary(),
+				Y:  p.parseExpr_unary(),
 			}
 		default:
 			return expr
 		}
 	}
+}
+
+func (p *parser) parseExpr_unary() ast.Expr {
+	if p.accept(token.ADD) {
+		return p.parseExpr_primary()
+	}
+	if p.accept(token.SUB) {
+		return &ast.UnaryExpr{
+			X: p.parseExpr_primary(),
+		}
+	}
+	return p.parseExpr_primary()
 }
 
 func (p *parser) parseExpr_primary() ast.Expr {

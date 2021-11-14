@@ -17,6 +17,10 @@ func (p *Compiler) CompileFile(f *ast.File) string {
 	panic("todo")
 }
 
+func (p *Compiler) CompileBlock(blk *ast.BlockStmt) string {
+	panic("todo")
+}
+
 func (p *Compiler) CompileExpr(node ast.Expr) string {
 	var buf bytes.Buffer
 	fmt.Fprintf(&buf, "define i32 @main() {\n")
@@ -36,6 +40,13 @@ func (p *Compiler) genValue(w io.Writer, node ast.Expr) (id string) {
 		fmt.Fprintf(w, "\t%[1]s = add i32 0, %[2]v; %[1]s = %[2]v\n",
 			id, node.Value,
 		)
+	case *ast.UnaryExpr:
+		switch node.Op {
+		case token.SUB:
+			fmt.Fprintf(w, "\t%s = sub i32 0, %s\n",
+				id, p.genValue(w, node.X),
+			)
+		}
 	case *ast.ParenExpr:
 		fmt.Fprintf(w, "\t%[1]s = add i32 0, %[2]s; %[1]s = %[2]s\n",
 			id, p.genValue(w, node.X),

@@ -13,11 +13,13 @@ import (
 )
 
 var (
-	flagFile  = flag.String("file", "", "set ugo file")
-	flagCode  = flag.String("code", "", "set ugo code")
-	flagLex   = flag.Bool("lex", false, "show lex tokens")
-	flagAst   = flag.Bool("ast", false, "show ast")
-	flagLLIR  = flag.Bool("llir", false, "show llvm ir")
+	flagFile = flag.String("file", "", "set ugo file")
+	flagCode = flag.String("code", "", "set ugo code")
+
+	flagLex  = flag.Bool("lex", false, "show lex tokens")
+	flagAst  = flag.Bool("ast", false, "show ast")
+	flagLLIR = flag.Bool("llir", false, "show llvm ir")
+
 	flagDebug = flag.Bool("debug", false, "set debug mode")
 )
 

@@ -14,6 +14,8 @@ type Option struct {
 }
 
 func ParseFile(filename, src string, opt Option) (*ast.File, error) {
+	logger.Debugln("ParseFile:", string(src))
+
 	p := &parser{
 		filename: filename,
 		src:      src,
@@ -21,6 +23,19 @@ func ParseFile(filename, src string, opt Option) (*ast.File, error) {
 	}
 	p.parseFile()
 	return p.file, p.err
+}
+
+func ParseBlock(filename, src string, opt Option) (*ast.BlockStmt, error) {
+	logger.Debugln("ParseBlock:", string(src))
+
+	p := &parser{
+		filename: filename,
+		src:      src,
+		opt:      opt,
+		input:    lexer.Lex(filename, string(src), lexer.Option{}),
+	}
+	p.block = p.parseBlock()
+	return p.block, p.err
 }
 
 func ParseExpr(filename, src string, opt Option) (ast.Expr, error) {
@@ -46,10 +61,10 @@ type parser struct {
 	pos   int          // current position in the input.
 	width int          // width of last rune read from input.
 
-	file *ast.File
-	node ast.Node
-	expr ast.Expr
-	err  error
+	file  *ast.File
+	block *ast.BlockStmt
+	expr  ast.Expr
+	err   error
 }
 
 func (p *parser) next() lexer.Item {
