@@ -36,7 +36,11 @@ func (p *parser) parseConst() {
 		}
 	}
 
-	constSpec.Value = p.parseExpr()
+	if _, ok := p.acceptToken(token.ASSIGN); ok {
+		constSpec.Value = p.parseExpr()
+	}
+
+	p.acceptToken(token.SEMICOLON)
 
 	p.file.Consts = append(p.file.Consts, &constSpec)
 }

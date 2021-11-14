@@ -77,5 +77,8 @@ func main() {
 		fmt.Println(llir)
 	}
 
-	app.Run()
+	if err := app.Run(); err != nil {
+		fmt.Println("ERR:", err)
+		os.Exit(1)
+	}
 }

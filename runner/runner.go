@@ -70,7 +70,7 @@ func (p *App) GetLLIR() (string, error) {
 	}
 	node, err := p.GetAST()
 	if err != nil {
-		return "", nil
+		return "", err
 	}
 
 	switch p.codeMode {

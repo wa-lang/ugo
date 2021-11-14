@@ -36,7 +36,11 @@ func (p *parser) parseVar() {
 		}
 	}
 
-	varSpec.Value = p.parseExpr()
+	if _, ok := p.acceptToken(token.ASSIGN); ok {
+		varSpec.Value = p.parseExpr()
+	}
+
+	p.acceptToken(token.SEMICOLON)
 
 	p.file.Globals = append(p.file.Globals, &varSpec)
 }

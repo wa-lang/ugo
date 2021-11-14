@@ -48,30 +48,32 @@ func newParser(filename, src string, opt Option) *parser {
 	return p
 }
 
-func (p *parser) ParseFile() (*ast.File, error) {
+func (p *parser) ParseFile() (file *ast.File, err error) {
 	logger.Debugln("ParseFile:", string(p.src))
 
 	defer func() {
 		if r := recover(); r != nil {
 			// TODO: check err type
 		}
+		file, err = p.file, p.err
 	}()
 
 	p.parseFile()
-	return p.file, p.err
+	return
 }
 
-func (p *parser) ParseExpr() (ast.Expr, error) {
+func (p *parser) ParseExpr() (expr ast.Expr, err error) {
 	logger.Debugln("ParseExpr:", string(p.src))
 
 	defer func() {
 		if r := recover(); r != nil {
 			// TODO: check err type
 		}
+		expr, err = p.expr, p.err
 	}()
 
 	p.expr = p.parseExpr()
-	return p.expr, p.err
+	return
 }
 
 func (p *parser) nextToken() token.Token {

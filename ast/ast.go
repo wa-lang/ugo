@@ -56,11 +56,25 @@ type PackageSpec struct {
 	PkgName *Ident    // 包名
 }
 
+func (p *PackageSpec) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *PackageSpec) End() token.Pos {
+	return token.NoPos
+}
+
 // ImportSpec 表示一个导入包
 type ImportSpec struct {
 	ImportPos token.Pos
 	Name      *Ident
 	Path      string
+}
+
+func (p *ImportSpec) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *ImportSpec) End() token.Pos {
+	return token.NoPos
 }
 
 // 常量信息
@@ -71,12 +85,26 @@ type ConstSpec struct {
 	Value    Expr      // 常量表达式
 }
 
+func (p *ConstSpec) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *ConstSpec) End() token.Pos {
+	return token.NoPos
+}
+
 // 变量信息
 type VarSpec struct {
 	VarPos token.Pos // var 关键字位置
 	Name   *Ident    // 变量名字
 	Type   *Ident    // 变量类型, 可省略
 	Value  Expr      // 变量表达式
+}
+
+func (p *VarSpec) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *VarSpec) End() token.Pos {
+	return token.NoPos
 }
 
 // 函数对象
@@ -86,6 +114,13 @@ type Func struct {
 	Args    []*VarSpec // 函数参数
 	Returns []*VarSpec // 返回值列表
 	Body    *BlockStmt // 函数体
+}
+
+func (p *Func) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *Func) End() token.Pos {
+	return token.NoPos
 }
 
 // BlockStmt 表示一个语句块节点.

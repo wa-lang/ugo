@@ -84,12 +84,18 @@ func (l *lexer) backup() {
 }
 
 // emit passes an item back to the client.
-func (l *lexer) emit(tok token.TokenType) {
-	l.items = append(l.items, token.Token{
-		Type:    tok,
+func (l *lexer) emit(typ token.TokenType) {
+	tok := token.Token{
+		Type:    typ,
 		Literal: l.input[l.start:l.pos],
 		Pos:     token.Pos(l.pos + 1),
-	})
+	}
+
+	if typ == token.IDENT {
+		tok.Type = token.Lookup(tok.Literal)
+	}
+
+	l.items = append(l.items, tok)
 	l.start = l.pos
 }
 
