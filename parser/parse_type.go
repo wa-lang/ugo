@@ -39,12 +39,11 @@ func (p *parser) parseType() {
 	switch p.peekTokenType() {
 	case token.IDENT:
 		ident := p.nextToken()
-		typeSpec.Type = &ast.Type{
-			Named: &ast.Ident{
-				NamePos: ident.Pos,
-				Name:    ident.IdentName(),
-			},
+		typeSpec.Type = &ast.Ident{
+			NamePos: ident.Pos,
+			Name:    ident.IdentName(),
 		}
+
 	case token.STRUCT:
 		p.errorf("unsupport struct")
 	case token.INTERFACE:

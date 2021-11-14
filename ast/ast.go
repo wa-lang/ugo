@@ -63,7 +63,7 @@ type TypeSpec struct {
 	TypePos token.Pos
 	Assign  token.Pos // =
 	Name    *Ident
-	Type    *Type
+	Type    Expr
 }
 
 func (p *TypeSpec) Pos() token.Pos {
@@ -120,9 +120,10 @@ func (p *VarSpec) End() token.Pos {
 // 函数对象
 type Func struct {
 	FuncPos token.Pos  // var 关键字位置
+	Self    *Field     // 方法所属类型
 	Name    *Ident     // 变量名字
-	Args    []*VarSpec // 函数参数
-	Returns []*VarSpec // 返回值列表
+	Args    []*Field   // 函数参数
+	Returns []*Field   // 返回值列表
 	Body    *BlockStmt // 函数体
 }
 
@@ -130,6 +131,19 @@ func (p *Func) Pos() token.Pos {
 	return token.NoPos
 }
 func (p *Func) End() token.Pos {
+	return token.NoPos
+}
+
+// 字段信息, 用于函数参数
+type Field struct {
+	Name *Ident
+	Type Expr
+}
+
+func (p *Field) Pos() token.Pos {
+	return token.NoPos
+}
+func (p *Field) End() token.Pos {
 	return token.NoPos
 }
 

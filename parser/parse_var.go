@@ -29,6 +29,15 @@ func (p *parser) parseVar() {
 		}
 	}
 
+	switch p.peekTokenType() {
+	case token.IDENT:
+	case token.LBRACK: // []T
+	case token.STRUCT:
+	case token.MAP:
+	case token.INTERFACE:
+	default:
+	}
+
 	if typ, ok := p.acceptToken(token.IDENT); ok {
 		varSpec.Type = &ast.Ident{
 			NamePos: typ.Pos,

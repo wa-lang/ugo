@@ -12,8 +12,11 @@ func (p *parser) parseExpr() ast.Expr {
 	logger.Debugln("peek =", p.peekToken())
 
 	expr := p.parseExpr_mul()
+
 	for {
 		switch p.peekTokenType() {
+		case token.SEMICOLON:
+			return expr
 		case token.ADD, token.SUB:
 			tok := p.nextToken()
 			expr = &ast.BinaryExpr{
@@ -28,9 +31,13 @@ func (p *parser) parseExpr() ast.Expr {
 }
 
 func (p *parser) parseExpr_mul() ast.Expr {
+	logger.Debugln("peek =", p.peekToken())
+
 	expr := p.parseExpr_unary()
 	for {
 		switch p.peekTokenType() {
+		case token.SEMICOLON:
+			return expr
 		case token.MUL, token.QUO:
 			tok := p.nextToken()
 			expr = &ast.BinaryExpr{
@@ -45,6 +52,8 @@ func (p *parser) parseExpr_mul() ast.Expr {
 }
 
 func (p *parser) parseExpr_unary() ast.Expr {
+	logger.Debugln("peek =", p.peekToken())
+
 	if _, ok := p.acceptToken(token.ADD); ok {
 		return p.parseExpr_primary()
 	}
@@ -57,6 +66,8 @@ func (p *parser) parseExpr_unary() ast.Expr {
 }
 
 func (p *parser) parseExpr_primary() ast.Expr {
+	logger.Debugln("peek =", p.peekToken())
+
 	peek := p.peekToken()
 
 	logger.Debugf("peek = %v\n", peek)

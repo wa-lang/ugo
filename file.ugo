@@ -10,3 +10,7 @@ type MyInt int
 type MyInt2 = int
 
 var x = println(1 + 2*(3+4) + -10 + double(50))
+
+func println() int
+
+func main() int {}
