@@ -151,6 +151,17 @@ type ParenExpr struct {
 func (p *ParenExpr) Pos() token.Pos { return p.Lparen }
 func (p *ParenExpr) End() token.Pos { return p.Rparen }
 
+// CallExpr 表示一个函数调用
+type CallExpr struct {
+	Fun    *Ident    // 函数名字
+	Lparen token.Pos //  "(" 的位置
+	Args   []Expr    // 调用参数列表
+	Rparen token.Pos // ")" 的位置
+}
+
+func (p *CallExpr) Pos() token.Pos { return p.Fun.Pos() }
+func (p *CallExpr) End() token.Pos { return p.Rparen }
+
 // Comment 表示一个注释
 type Comment struct {
 	Slash token.Pos // position of "/" starting the comment

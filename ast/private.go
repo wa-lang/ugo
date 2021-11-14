@@ -19,6 +19,7 @@ var (
 	_ Expr = (*BinaryExpr)(nil)
 	_ Expr = (*UnaryExpr)(nil)
 	_ Expr = (*ParenExpr)(nil)
+	_ Expr = (*CallExpr)(nil)
 )
 
 func (p *File) node_private() {}
@@ -33,6 +34,7 @@ func (p *Number) node_private()     {}
 func (p *BinaryExpr) node_private() {}
 func (p *UnaryExpr) node_private()  {}
 func (p *ParenExpr) node_private()  {}
+func (p *CallExpr) node_private()   {}
 
 func (p *Comment) node_private()      {}
 func (p *CommentGroup) node_private() {}
@@ -47,3 +49,4 @@ func (p *Number) expr_private()     {}
 func (p *BinaryExpr) expr_private() {}
 func (p *UnaryExpr) expr_private()  {}
 func (p *ParenExpr) expr_private()  {}
+func (p *CallExpr) expr_private()   {}

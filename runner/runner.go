@@ -67,15 +67,17 @@ func (p *App) Run() error {
 
 	stdoutStderr, err := exec.Command("clang", "-Wno-override-module", "-o", "a.out", "a.out.ll").CombinedOutput()
 	if err != nil {
-		fmt.Println(string(stdoutStderr))
+		fmt.Print(string(stdoutStderr))
 		return err
 	}
 
-	if err := exec.Command("./a.out").Run(); err != nil {
-		fmt.Println(err.(*exec.ExitError).ExitCode())
+	if stdoutStderr, err := exec.Command("./a.out").CombinedOutput(); err != nil {
+		fmt.Print(string(stdoutStderr))
+		fmt.Println("exit:", err.(*exec.ExitError).ExitCode())
 		return err
 	} else {
-		fmt.Println(0)
+		fmt.Print(string(stdoutStderr))
+		fmt.Println("exit:", 0)
 		return nil
 	}
 }

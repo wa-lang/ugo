@@ -14,6 +14,10 @@ type Item struct {
 	Value   interface{}
 }
 
+func (i Item) IdentName() string {
+	return i.Literal
+}
+
 func (i Item) RuneValue() rune {
 	if x, ok := i.Value.(rune); ok {
 		return x

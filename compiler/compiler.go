@@ -23,6 +23,10 @@ func (p *Compiler) CompileBlock(blk *ast.BlockStmt) string {
 
 func (p *Compiler) CompileExpr(node ast.Expr) string {
 	var buf bytes.Buffer
+
+	fmt.Fprintln(&buf, builtin_llir)
+	fmt.Fprintln(&buf)
+
 	fmt.Fprintf(&buf, "define i32 @main() {\n")
 	fmt.Fprintf(&buf, "\tret i32 %s\n", p.genValue(&buf, node))
 	fmt.Fprintf(&buf, "}\n")
@@ -36,6 +40,10 @@ func (p *Compiler) genValue(w io.Writer, node ast.Expr) (id string) {
 	}
 	id = p.genId()
 	switch node := node.(type) {
+	case *ast.Ident:
+		//fmt.Fprintf(w, "\t%[1]s = add i32 0, %[2]v; %[1]s = %[2]v\n",
+		//	id, node.Value,
+		//)
 	case *ast.Number:
 		fmt.Fprintf(w, "\t%[1]s = add i32 0, %[2]v; %[1]s = %[2]v\n",
 			id, node.Value,
@@ -50,6 +58,10 @@ func (p *Compiler) genValue(w io.Writer, node ast.Expr) (id string) {
 	case *ast.ParenExpr:
 		fmt.Fprintf(w, "\t%[1]s = add i32 0, %[2]s; %[1]s = %[2]s\n",
 			id, p.genValue(w, node.X),
+		)
+	case *ast.CallExpr:
+		fmt.Fprintf(w, "\t%[1]s = call i32(i32) @%[2]s(i32 %[3]s);\n",
+			id, node.Fun.Name, p.genValue(w, node.Args[0]),
 		)
 	case *ast.BinaryExpr:
 		switch node.Op {

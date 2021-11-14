@@ -62,6 +62,26 @@ func (p *parser) parseExpr_primary() ast.Expr {
 	logger.Debugf("parseExpr_primary: peek = %v\n", peek)
 
 	switch peek.Token {
+	case token.IDENT:
+		ident := p.next()
+		if p.accept(token.LPAREN) {
+			var args []ast.Expr
+			for {
+				if p.accept(token.RPAREN) {
+					return &ast.CallExpr{
+						Fun: &ast.Ident{
+							Name: ident.IdentName(),
+						},
+						Args: args,
+					}
+				}
+				args = append(args, p.parseExpr())
+				p.accept(token.COMMA)
+			}
+		}
+		return &ast.Ident{
+			Name: ident.IdentName(),
+		}
 	case token.INT:
 		switch tok := p.next(); tok.Token {
 		case token.INT:
