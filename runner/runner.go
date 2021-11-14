@@ -9,12 +9,13 @@ import (
 	"github.com/chai2010/ugo/compiler"
 	"github.com/chai2010/ugo/lexer"
 	"github.com/chai2010/ugo/parser"
+	"github.com/chai2010/ugo/token"
 )
 
 type App struct {
 	filename string
 	code     string
-	tokens   []lexer.Item
+	tokens   []token.Token
 	node     ast.Node
 	llir     string
 }
@@ -28,7 +29,7 @@ func NewApp(filename, code string) *App {
 	return p
 }
 
-func (p *App) GetTokens() []lexer.Item {
+func (p *App) GetTokens() []token.Token {
 	return p.tokens
 }
 

@@ -13,12 +13,12 @@ func (p *parser) parseExpr() ast.Expr {
 
 	expr := p.parseExpr_mul()
 	for {
-		switch p.peekToken() {
+		switch p.peekTokenType() {
 		case token.ADD, token.SUB:
 			tok := p.next()
 			expr = &ast.BinaryExpr{
 				X:  expr,
-				Op: tok.Token,
+				Op: tok,
 				Y:  p.parseExpr_mul(),
 			}
 		default:
@@ -30,12 +30,12 @@ func (p *parser) parseExpr() ast.Expr {
 func (p *parser) parseExpr_mul() ast.Expr {
 	expr := p.parseExpr_unary()
 	for {
-		switch p.peekToken() {
+		switch p.peekTokenType() {
 		case token.MUL, token.QUO:
 			tok := p.next()
 			expr = &ast.BinaryExpr{
 				X:  expr,
-				Op: tok.Token,
+				Op: tok,
 				Y:  p.parseExpr_unary(),
 			}
 		default:
@@ -61,7 +61,7 @@ func (p *parser) parseExpr_primary() ast.Expr {
 
 	logger.Debugf("parseExpr_primary: peek = %v\n", peek)
 
-	switch peek.Token {
+	switch peek.Type {
 	case token.IDENT:
 		ident := p.next()
 		if p.accept(token.LPAREN) {
@@ -83,7 +83,7 @@ func (p *parser) parseExpr_primary() ast.Expr {
 			Name: ident.IdentName(),
 		}
 	case token.INT:
-		switch tok := p.next(); tok.Token {
+		switch tok := p.next(); tok.Type {
 		case token.INT:
 			return &ast.Number{
 				Value: int(tok.IntValue()),

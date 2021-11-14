@@ -56,10 +56,10 @@ type parser struct {
 	filename string
 	src      string
 
-	input []lexer.Item // the tokens being parsed.
-	start int          // start position of this item.
-	pos   int          // current position in the input.
-	width int          // width of last rune read from input.
+	input []token.Token // the tokens being parsed.
+	start int           // start position of this item.
+	pos   int           // current position in the input.
+	width int           // width of last rune read from input.
 
 	file  *ast.File
 	block *ast.BlockStmt
@@ -67,10 +67,10 @@ type parser struct {
 	err   error
 }
 
-func (p *parser) next() lexer.Item {
+func (p *parser) next() token.Token {
 	if p.pos >= len(p.input) {
 		p.width = 0
-		return lexer.Item{Token: token.EOF}
+		return token.Token{Type: token.EOF}
 	}
 	tok := p.input[p.pos]
 	p.width = 1
@@ -78,14 +78,14 @@ func (p *parser) next() lexer.Item {
 	return tok
 }
 
-func (p *parser) peek() lexer.Item {
+func (p *parser) peek() token.Token {
 	tok := p.next()
 	p.backup()
 	return tok
 }
 
-func (p *parser) peekToken() token.Token {
-	return p.peek().Token
+func (p *parser) peekTokenType() token.TokenType {
+	return p.peek().Type
 }
 
 func (p *parser) backup() {
@@ -96,10 +96,10 @@ func (p *parser) ignore() {
 	p.start = p.pos
 }
 
-func (p *parser) accept(validTokens ...token.Token) bool {
+func (p *parser) accept(validTokens ...token.TokenType) bool {
 	tok := p.next()
 	for _, x := range validTokens {
-		if tok.Token == x {
+		if tok.Type == x {
 			return true
 		}
 	}
@@ -107,7 +107,7 @@ func (p *parser) accept(validTokens ...token.Token) bool {
 	return false
 }
 
-func (p *parser) acceptRun(validTokens ...token.Token) {
+func (p *parser) acceptRun(validTokens ...token.TokenType) {
 	for p.accept(validTokens...) {
 	}
 	p.backup()

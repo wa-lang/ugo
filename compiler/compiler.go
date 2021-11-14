@@ -49,7 +49,7 @@ func (p *Compiler) genValue(w io.Writer, node ast.Expr) (id string) {
 			id, node.Value,
 		)
 	case *ast.UnaryExpr:
-		switch node.Op {
+		switch node.Op.Type {
 		case token.SUB:
 			fmt.Fprintf(w, "\t%s = sub i32 0, %s\n",
 				id, p.genValue(w, node.X),
@@ -64,7 +64,7 @@ func (p *Compiler) genValue(w io.Writer, node ast.Expr) (id string) {
 			id, node.Fun.Name, p.genValue(w, node.Args[0]),
 		)
 	case *ast.BinaryExpr:
-		switch node.Op {
+		switch node.Op.Type {
 		case token.ADD:
 			fmt.Fprintf(w, "\t%s = add i32 %s, %s\n",
 				id, p.genValue(w, node.X), p.genValue(w, node.Y),
