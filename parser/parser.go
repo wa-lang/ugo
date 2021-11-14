@@ -48,7 +48,7 @@ func newParser(filename, src string, opt Option) *parser {
 }
 
 func (p *parser) ParseFile() (file *ast.File, err error) {
-	logger.Debugln("ParseFile:", string(p.src))
+	logger.Debugln(string(p.src))
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -64,7 +64,7 @@ func (p *parser) ParseFile() (file *ast.File, err error) {
 }
 
 func (p *parser) ParseExpr() (expr ast.Expr, err error) {
-	logger.Debugln("ParseExpr:", string(p.src))
+	logger.Debugln(string(p.src))
 
 	defer func() {
 		if r := recover(); r != nil {

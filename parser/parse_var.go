@@ -10,7 +10,7 @@ import (
 // var x int = 2
 
 func (p *parser) parseVar() {
-	logger.Debugln("parseVar: peek =", p.peekToken())
+	logger.Debugln("peek =", p.peekToken())
 
 	tok, ok := p.acceptToken(token.VAR)
 	if !ok {

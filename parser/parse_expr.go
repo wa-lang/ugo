@@ -9,7 +9,7 @@ import (
 )
 
 func (p *parser) parseExpr() ast.Expr {
-	logger.Debugln("parseExpr: peek =", p.peekToken())
+	logger.Debugln("peek =", p.peekToken())
 
 	expr := p.parseExpr_mul()
 	for {
@@ -59,7 +59,7 @@ func (p *parser) parseExpr_unary() ast.Expr {
 func (p *parser) parseExpr_primary() ast.Expr {
 	peek := p.peekToken()
 
-	logger.Debugf("parseExpr_primary: peek = %v\n", peek)
+	logger.Debugf("peek = %v\n", peek)
 
 	switch peek.Type {
 	case token.IDENT:

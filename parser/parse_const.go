@@ -10,7 +10,7 @@ import (
 // const x int = 1+2
 
 func (p *parser) parseConst() {
-	logger.Debugln("parseConst: peek =", p.peekToken())
+	logger.Debugln("peek =", p.peekToken())
 
 	tok, ok := p.acceptToken(token.CONST)
 	if !ok {

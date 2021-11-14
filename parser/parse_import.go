@@ -9,7 +9,7 @@ import (
 // import "path/to/pkg"
 // import name "path/to/pkg"
 func (p *parser) parseImport() {
-	logger.Debugln("parseImport: peek =", p.peekToken())
+	logger.Debugln("peek =", p.peekToken())
 
 	tok, ok := p.acceptToken(token.IMPORT)
 	if !ok {

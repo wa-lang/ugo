@@ -7,7 +7,7 @@ import (
 )
 
 func (p *parser) parseFile() {
-	logger.Debugln("parseFile: peek =", p.peekToken())
+	logger.Debugln("peek =", p.peekToken())
 
 	p.file = &ast.File{
 		Name: p.filename,
@@ -54,7 +54,7 @@ LoopImport:
 }
 
 func (p *parser) parsePackage() {
-	logger.Debugln("parsePackage: peek =", p.peekToken())
+	logger.Debugln("peek =", p.peekToken())
 
 	pkg, ok := p.acceptToken(token.PACKAGE)
 	if !ok {

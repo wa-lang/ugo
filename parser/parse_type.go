@@ -12,7 +12,7 @@ import (
 // type Reader interface { ... }
 
 func (p *parser) parseType() {
-	logger.Debugln("parseType: peek =", p.peekToken())
+	logger.Debugln("peek =", p.peekToken())
 
 	tok, ok := p.acceptToken(token.TYPE)
 	if !ok {
