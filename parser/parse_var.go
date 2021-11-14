@@ -6,37 +6,37 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
-// const x = 1+2
-// const x int = 1+2
+// var x int
+// var x int = 2
 
-func (p *parser) parseConst() {
-	logger.Debugln("parseConst: peek =", p.peekToken())
+func (p *parser) parseVar() {
+	logger.Debugln("parseVar: peek =", p.peekToken())
 
-	tok, ok := p.acceptToken(token.CONST)
+	tok, ok := p.acceptToken(token.VAR)
 	if !ok {
 		return
 	}
 
-	var constSpec = ast.ConstSpec{
-		ConstPos: tok.Pos,
+	var varSpec = ast.VarSpec{
+		VarPos: tok.Pos,
 	}
 
 	name, ok := p.acceptToken(token.IDENT)
 	if ok {
-		constSpec.Name = &ast.Ident{
+		varSpec.Name = &ast.Ident{
 			NamePos: name.Pos,
 			Name:    name.IdentName(),
 		}
 	}
 
 	if typ, ok := p.acceptToken(token.IDENT); ok {
-		constSpec.Type = &ast.Ident{
+		varSpec.Type = &ast.Ident{
 			NamePos: typ.Pos,
 			Name:    typ.IdentName(),
 		}
 	}
 
-	constSpec.Value = p.parseExpr()
+	varSpec.Value = p.parseExpr()
 
-	p.file.Consts = append(p.file.Consts, &constSpec)
+	p.file.Globals = append(p.file.Globals, &varSpec)
 }

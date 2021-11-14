@@ -9,13 +9,13 @@ import (
 )
 
 func (p *parser) parseExpr() ast.Expr {
-	logger.Debugln("parseExpr: peek =", p.peek())
+	logger.Debugln("parseExpr: peek =", p.peekToken())
 
 	expr := p.parseExpr_mul()
 	for {
 		switch p.peekTokenType() {
 		case token.ADD, token.SUB:
-			tok := p.next()
+			tok := p.nextToken()
 			expr = &ast.BinaryExpr{
 				X:  expr,
 				Op: tok,
@@ -32,7 +32,7 @@ func (p *parser) parseExpr_mul() ast.Expr {
 	for {
 		switch p.peekTokenType() {
 		case token.MUL, token.QUO:
-			tok := p.next()
+			tok := p.nextToken()
 			expr = &ast.BinaryExpr{
 				X:  expr,
 				Op: tok,
@@ -45,10 +45,10 @@ func (p *parser) parseExpr_mul() ast.Expr {
 }
 
 func (p *parser) parseExpr_unary() ast.Expr {
-	if p.accept(token.ADD) {
+	if _, ok := p.acceptToken(token.ADD); ok {
 		return p.parseExpr_primary()
 	}
-	if p.accept(token.SUB) {
+	if _, ok := p.acceptToken(token.SUB); ok {
 		return &ast.UnaryExpr{
 			X: p.parseExpr_primary(),
 		}
@@ -57,17 +57,17 @@ func (p *parser) parseExpr_unary() ast.Expr {
 }
 
 func (p *parser) parseExpr_primary() ast.Expr {
-	peek := p.peek()
+	peek := p.peekToken()
 
 	logger.Debugf("parseExpr_primary: peek = %v\n", peek)
 
 	switch peek.Type {
 	case token.IDENT:
-		ident := p.next()
-		if p.accept(token.LPAREN) {
+		ident := p.nextToken()
+		if _, ok := p.acceptToken(token.LPAREN); ok {
 			var args []ast.Expr
 			for {
-				if p.accept(token.RPAREN) {
+				if _, ok := p.acceptToken(token.RPAREN); ok {
 					return &ast.CallExpr{
 						Fun: &ast.Ident{
 							Name: ident.IdentName(),
@@ -76,14 +76,14 @@ func (p *parser) parseExpr_primary() ast.Expr {
 					}
 				}
 				args = append(args, p.parseExpr())
-				p.accept(token.COMMA)
+				p.acceptToken(token.COMMA)
 			}
 		}
 		return &ast.Ident{
 			Name: ident.IdentName(),
 		}
 	case token.INT:
-		switch tok := p.next(); tok.Type {
+		switch tok := p.nextToken(); tok.Type {
 		case token.INT:
 			return &ast.Number{
 				Value: int(tok.IntValue()),
@@ -93,13 +93,13 @@ func (p *parser) parseExpr_primary() ast.Expr {
 			panic(p.err)
 		}
 	case token.LPAREN:
-		p.next()
+		p.nextToken()
 		expr := p.parseExpr()
-		if !p.accept(token.RPAREN) {
+		if _, ok := p.acceptToken(token.RPAREN); !ok {
 			p.err = fmt.Errorf("todo")
 			panic(p.err)
 		}
-		p.next()
+		p.nextToken()
 		return expr
 	default:
 		p.errorf("todo: peek=%v", peek)

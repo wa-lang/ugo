@@ -6,23 +6,26 @@ import (
 
 // File 表示 µGo 文件对应的语法树.
 type File struct {
-	Name     string          // 文件名
-	Data     []byte          // 源文件
-	Doc      *CommentGroup   // 文档注释
-	List     []Stmt          // 语句列表
-	Comments []*CommentGroup // 文件中的全部注释
+	Name string // 文件名
+	Data []byte // 源文件
+
+	Pkg     *PackageSpec  // 包信息
+	Imports []*ImportSpec // 导入包信息
+	Consts  []*ConstSpec  // 常量信息
+	Globals []*VarSpec    // 全局变量
+	Funcs   []*Func       // 函数列表
 }
 
 func (p *File) Pos() token.Pos {
-	if len(p.List) > 0 {
-		return p.List[0].Pos()
-	}
+	//if len(p.List) > 0 {
+	//	return p.List[0].Pos()
+	//}
 	return token.NoPos
 }
 func (p *File) End() token.Pos {
-	if n := len(p.List); n > 0 {
-		return p.List[n-1].End()
-	}
+	//if n := len(p.List); n > 0 {
+	//	return p.List[n-1].End()
+	//}
 	return token.NoPos
 }
 
@@ -44,6 +47,45 @@ type Stmt interface {
 type Expr interface {
 	Node
 	expr_private()
+}
+
+// 包信息
+type PackageSpec struct {
+	Doc     *CommentGroup
+	PkgPos  token.Pos // packaage 位置
+	PkgName *Ident    // 包名
+}
+
+// ImportSpec 表示一个导入包
+type ImportSpec struct {
+	ImportPos token.Pos
+	Name      *Ident
+	Path      string
+}
+
+// 常量信息
+type ConstSpec struct {
+	ConstPos token.Pos // const 关键字位置
+	Name     *Ident    // 常量名字
+	Type     *Ident    // 常量类型, 可省略
+	Value    Expr      // 常量表达式
+}
+
+// 变量信息
+type VarSpec struct {
+	VarPos token.Pos // var 关键字位置
+	Name   *Ident    // 变量名字
+	Type   *Ident    // 变量类型, 可省略
+	Value  Expr      // 变量表达式
+}
+
+// 函数对象
+type Func struct {
+	FuncPos token.Pos  // var 关键字位置
+	Name    *Ident     // 变量名字
+	Args    []*VarSpec // 函数参数
+	Returns []*VarSpec // 返回值列表
+	Body    *BlockStmt // 函数体
 }
 
 // BlockStmt 表示一个语句块节点.

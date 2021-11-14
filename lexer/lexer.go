@@ -22,6 +22,27 @@ func Lex(name, input string, opt Option) []token.Token {
 		opt:   opt,
 	}
 	l.run()
+
+	if len(l.items) == 0 {
+		l.items = append(l.items, token.Token{Type: token.EOF})
+	}
+
+	if l.items[len(l.items)-1].Type != token.EOF {
+		l.items = append(l.items, token.Token{Type: token.EOF})
+	}
+
+	// return multi ';'
+	items := l.items[:1]
+	for _, x := range l.items[1:] {
+		if x.Type == token.SEMICOLON {
+			if items[len(items)-1].Type == token.SEMICOLON {
+				continue
+			}
+		}
+		items = append(items, x)
+	}
+
+	l.items = items
 	return l.items
 }
 
