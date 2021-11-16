@@ -168,7 +168,5 @@ func (p *parser) parseFunc_sig_field() (field *ast.Field) {
 func (p *parser) parseFunc_body(fn *ast.Func) {
 	logger.Debugln("peek =", p.peekToken())
 
-	if _, ok := p.acceptToken(token.LBRACE); ok {
-		fn.Body = p.parseBlock()
-	}
+	fn.Body = p.parseStmt_block()
 }
