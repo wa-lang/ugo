@@ -37,20 +37,20 @@ Loop:
 			break Loop
 
 		case token.CONST:
-			_ = p.parseConst()
+			block.List = append(block.List, p.parseConst())
 		case token.TYPE:
-			_ = p.parseType()
+			block.List = append(block.List, p.parseType())
 		case token.VAR:
-			_ = p.parseVar()
+			block.List = append(block.List, p.parseVar())
 
 		case token.DEFER:
-			p.parseStmt_defer(block)
+			block.List = append(block.List, p.parseStmt_defer())
 		case token.IF:
-			p.parseStmt_if(block)
+			block.List = append(block.List, p.parseStmt_if())
 		case token.FOR:
-			p.parseStmt_for(block)
+			block.List = append(block.List, p.parseStmt_for())
 		case token.RETURN:
-			p.parseStmt_return(block)
+			block.List = append(block.List, p.parseStmt_return())
 
 		default:
 			p.parseStmt_assign(block)

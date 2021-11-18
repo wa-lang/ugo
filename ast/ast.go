@@ -186,6 +186,9 @@ func (p *IfStmt) End() token.Pos {
 // ForStmt 表示一个 for 语句节点.
 type ForStmt struct {
 	For  token.Pos  // for 关键字的位置
+	Init Stmt       // 初始化语句
+	Cond Expr       // 条件表达式
+	Post Stmt       // 迭代语句
 	Body *BlockStmt // 循环对应的语句列表
 }
 
