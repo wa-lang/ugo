@@ -134,3 +134,20 @@ func (p *parser) parseExpr_primary() ast.Expr {
 		panic(fmt.Errorf("expr: %v", p.peekToken()))
 	}
 }
+
+func (p *parser) parseExpr_call() *ast.CallExpr {
+	tokIdent := p.mustAcceptToken(token.IDENT)
+	tokLparen := p.mustAcceptToken(token.LPAREN)
+	args := p.parseExprList()
+	tokRparen := p.mustAcceptToken(token.RPAREN)
+
+	return &ast.CallExpr{
+		Fun: &ast.Ident{
+			NamePos: tokIdent.Pos,
+			Name:    tokIdent.IdentName(),
+		},
+		Lparen: tokLparen.Pos,
+		Args:   args,
+		Rparen: tokRparen.Pos,
+	}
+}

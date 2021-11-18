@@ -1,3 +1,5 @@
 package parser
 
-func (p *parser) parseStmt() {}
+func (p *parser) parseStmt() {
+	//
+}

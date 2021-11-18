@@ -43,31 +43,17 @@ Loop:
 		case token.VAR:
 			_ = p.parseVar()
 
+		case token.DEFER:
+			p.parseStmt_defer(block)
+		case token.IF:
+			p.parseStmt_if(block)
+		case token.FOR:
+			p.parseStmt_for(block)
+		case token.RETURN:
+			p.parseStmt_return(block)
+
 		default:
-			exprs := p.parseExprList()
-			if len(exprs) > 1 {
-				p.mustAcceptToken(token.ASSIGN, token.DEFINE)
-				exprsRight := p.parseExprList()
-
-				block.List = append(block.List, &ast.AssignStmt{
-					Target: exprs[0],
-					Value:  exprsRight[0],
-				})
-			} else {
-				if _, ok := p.acceptToken(token.ASSIGN, token.DEFINE); ok {
-					exprsRight := p.parseExprList()
-					block.List = append(block.List, &ast.AssignStmt{
-						Target: exprs[0],
-						Value:  exprsRight[0],
-					})
-				} else {
-					block.List = append(block.List, &ast.AssignStmt{
-						Value: exprs[0],
-					})
-				}
-			}
-
-			logger.Debugln("peek =", p.peekTokenType())
+			p.parseStmt_assign(block)
 		}
 	}
 
