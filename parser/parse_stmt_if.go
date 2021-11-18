@@ -6,6 +6,6 @@ import (
 )
 
 func (p *parser) parseStmt_if(blk *ast.BlockStmt) {
-	tokIf := p.mustAcceptToken(token.IF)
+	tokIf := p.r.MustAcceptToken(token.IF)
 	_ = tokIf
 }

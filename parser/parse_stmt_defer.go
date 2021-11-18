@@ -6,7 +6,7 @@ import (
 )
 
 func (p *parser) parseStmt_defer(block *ast.BlockStmt) {
-	tokDefer := p.mustAcceptToken(token.DEFER)
+	tokDefer := p.r.MustAcceptToken(token.DEFER)
 	callExpr := p.parseExpr_call()
 
 	block.List = append(block.List, &ast.DeferStmt{

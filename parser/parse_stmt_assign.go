@@ -8,7 +8,7 @@ import (
 func (p *parser) parseStmt_assign(block *ast.BlockStmt) {
 	exprs := p.parseExprList()
 	if len(exprs) > 1 {
-		p.mustAcceptToken(token.ASSIGN, token.DEFINE)
+		p.r.MustAcceptToken(token.ASSIGN, token.DEFINE)
 		exprsRight := p.parseExprList()
 
 		block.List = append(block.List, &ast.AssignStmt{
@@ -16,7 +16,7 @@ func (p *parser) parseStmt_assign(block *ast.BlockStmt) {
 			Value:  exprsRight[0],
 		})
 	} else {
-		if _, ok := p.acceptToken(token.ASSIGN, token.DEFINE); ok {
+		if _, ok := p.r.AcceptToken(token.ASSIGN, token.DEFINE); ok {
 			exprsRight := p.parseExprList()
 			block.List = append(block.List, &ast.AssignStmt{
 				Target: exprs[0],

@@ -6,6 +6,6 @@ import (
 )
 
 func (p *parser) parseStmt_for(blk *ast.BlockStmt) {
-	tokFor := p.mustAcceptToken(token.FOR)
+	tokFor := p.r.MustAcceptToken(token.FOR)
 	_ = tokFor
 }

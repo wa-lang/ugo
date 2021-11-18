@@ -9,8 +9,8 @@ import (
 // var x int = 2
 
 func (p *parser) parseVar() *ast.VarSpec {
-	tokVar := p.mustAcceptToken(token.VAR)
-	tokIdent := p.mustAcceptToken(token.IDENT)
+	tokVar := p.r.MustAcceptToken(token.VAR)
+	tokIdent := p.r.MustAcceptToken(token.IDENT)
 
 	var varSpec = &ast.VarSpec{
 		VarPos: tokVar.Pos,
@@ -21,7 +21,7 @@ func (p *parser) parseVar() *ast.VarSpec {
 		Name:    tokIdent.IdentName(),
 	}
 
-	switch p.peekTokenType() {
+	switch p.r.PeekToken().Type {
 	case token.IDENT:
 	case token.LBRACK: // []T
 	case token.STRUCT:
@@ -30,17 +30,17 @@ func (p *parser) parseVar() *ast.VarSpec {
 	default:
 	}
 
-	if typ, ok := p.acceptToken(token.IDENT); ok {
+	if typ, ok := p.r.AcceptToken(token.IDENT); ok {
 		varSpec.Type = &ast.Ident{
 			NamePos: typ.Pos,
 			Name:    typ.IdentName(),
 		}
 	}
 
-	if _, ok := p.acceptToken(token.ASSIGN); ok {
+	if _, ok := p.r.AcceptToken(token.ASSIGN); ok {
 		varSpec.Value = p.parseExpr()
 	}
 
-	p.acceptTokenRun(token.SEMICOLON)
+	p.r.AcceptTokenList(token.SEMICOLON)
 	return varSpec
 }

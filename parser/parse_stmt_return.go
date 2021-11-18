@@ -6,7 +6,7 @@ import (
 )
 
 func (p *parser) parseStmt_return(block *ast.BlockStmt) {
-	tokReturn := p.mustAcceptToken(token.RETURN)
+	tokReturn := p.r.MustAcceptToken(token.RETURN)
 	exprs := p.parseExprList()
 
 	block.List = append(block.List, &ast.ReturnStmt{

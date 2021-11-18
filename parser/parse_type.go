@@ -11,8 +11,8 @@ import (
 // type Reader interface { ... }
 
 func (p *parser) parseType() *ast.TypeSpec {
-	tokType := p.mustAcceptToken(token.TYPE)
-	tokIdent := p.mustAcceptToken(token.IDENT)
+	tokType := p.r.MustAcceptToken(token.TYPE)
+	tokIdent := p.r.MustAcceptToken(token.IDENT)
 
 	var typeSpec = &ast.TypeSpec{
 		TypePos: tokType.Pos,
@@ -23,26 +23,26 @@ func (p *parser) parseType() *ast.TypeSpec {
 		Name:    tokIdent.IdentName(),
 	}
 
-	if tok, ok := p.acceptToken(token.ASSIGN); ok {
+	if tok, ok := p.r.AcceptToken(token.ASSIGN); ok {
 		typeSpec.Assign = tok.Pos
 	}
 
-	switch p.peekTokenType() {
+	switch tok := p.r.PeekToken(); tok.Type {
 	case token.IDENT:
-		ident := p.nextToken()
+		ident := p.r.ReadToken()
 		typeSpec.Type = &ast.Ident{
 			NamePos: ident.Pos,
 			Name:    ident.IdentName(),
 		}
 
 	case token.STRUCT:
-		p.errorf("unsupport struct")
+		p.errorf(tok.Pos, "unsupport struct")
 	case token.INTERFACE:
-		p.errorf("unsupport interface")
+		p.errorf(tok.Pos, "unsupport interface")
 	default:
-		p.errorf("invalid token = %v", token.IDENT, p.peekToken())
+		p.errorf(tok.Pos, "invalid token = %v", tok)
 	}
 
-	p.acceptTokenRun(token.SEMICOLON)
+	p.r.AcceptTokenList(token.SEMICOLON)
 	return typeSpec
 }

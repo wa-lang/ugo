@@ -18,20 +18,20 @@ import (
 // return expr?
 
 func (p *parser) parseStmt_block() (block *ast.BlockStmt) {
-	logger.Debugln("peek =", p.peekToken())
+	logger.Debugln("peek =", p.r.PeekToken())
 
 	block = new(ast.BlockStmt)
-	p.mustAcceptToken(token.LBRACE)
+	p.r.MustAcceptToken(token.LBRACE)
 
 Loop:
 	for {
-		switch tok := p.peekToken(); tok.Type {
+		switch tok := p.r.PeekToken(); tok.Type {
 		case token.EOF:
 			break Loop
 		case token.ILLEGAL:
 			panic(tok)
 		case token.SEMICOLON:
-			p.acceptTokenRun(token.SEMICOLON)
+			p.r.AcceptTokenList(token.SEMICOLON)
 
 		case token.RBRACE:
 			break Loop
@@ -59,6 +59,6 @@ Loop:
 
 	// parse stmt list
 
-	p.acceptToken(token.RBRACE)
+	p.r.AcceptToken(token.RBRACE)
 	return
 }
