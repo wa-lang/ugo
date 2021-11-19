@@ -44,12 +44,16 @@ func (p *parser) parseStmt() ast.Stmt {
 				X: exprList[0],
 			}
 		case token.DEFINE:
+			valueList := p.parseExprList()
 			return &ast.AssignStmt{
-				// TODO
+				Target: exprList[0],
+				Value:  valueList[0],
 			}
 		case token.ASSIGN:
+			valueList := p.parseExprList()
 			return &ast.AssignStmt{
-				// TODO
+				Target: exprList[0],
+				Value:  valueList[0],
 			}
 
 		default:

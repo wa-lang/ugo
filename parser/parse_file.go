@@ -45,11 +45,11 @@ LoopImport:
 			p.r.AcceptTokenList(token.SEMICOLON)
 
 		case token.CONST:
-			p.file.Consts = append(p.file.Consts, p.parseConst())
+			p.file.Consts = append(p.file.Consts, p.parseStmt_const())
 		case token.TYPE:
-			p.file.Types = append(p.file.Types, p.parseType())
+			p.file.Types = append(p.file.Types, p.parseStmt_type())
 		case token.VAR:
-			p.file.Globals = append(p.file.Globals, p.parseVar())
+			p.file.Globals = append(p.file.Globals, p.parseStmt_var())
 		case token.FUNC:
 			p.file.Funcs = append(p.file.Funcs, p.parseFunc())
 
