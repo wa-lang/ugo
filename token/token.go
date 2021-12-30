@@ -5,75 +5,143 @@ import (
 	"strconv"
 )
 
+// 记号类型
+type TokenType int
+
+// ch3中 µGo程序用到的记号类型
+const (
+	EOF TokenType = iota // = 0
+	ERROR
+	COMMENT
+
+	IDENT
+	NUMBER
+
+	PACKAGE
+	VAR
+	FUNC
+	IF
+	ELSE
+	FOR
+
+	ADD // +
+	SUB // -
+	MUL // *
+	DIV // /
+	MOD // %
+
+	EQL // ==
+	NEQ // !=
+	LSS // <
+	LEQ // <=
+	GTR // >
+	GEQ // >=
+
+	ASSIGN // =
+	DEFINE // :=
+
+	LPAREN // (
+	RPAREN // )
+	LBRACE // {
+	RBRACE // }
+
+	COMMA     // ,
+	SEMICOLON // ;
+)
+
 // 记号值
 type Token struct {
-	Type    TokenType
-	Literal string
-	Pos     Pos
-	Value   interface{}
+	Pos     Pos       // 记号所在的位置(从1开始)
+	Type    TokenType // 记号的类型
+	Literal string    // 程序中原始的字符串
 }
 
-func (i Token) EndPos() Pos {
-	if i.Pos != NoPos {
-		return i.Pos + Pos(len(i.Literal))
-	}
-	return NoPos
+var tokens = [...]string{
+	EOF:     "EOF",
+	ERROR:   "ERROR",
+	COMMENT: "COMMENT",
+
+	IDENT:  "IDENT",
+	NUMBER: "NUMBER",
+
+	PACKAGE: "package",
+	VAR:     "var",
+	FUNC:    "func",
+	IF:      "if",
+	FOR:     "for",
+
+	ADD: "+",
+	SUB: "-",
+	MUL: "*",
+	DIV: "/",
+	MOD: "%",
+
+	EQL: "==",
+	NEQ: "!=",
+	LSS: "<",
+	LEQ: "<=",
+	GTR: ">",
+	GEQ: ">=",
+
+	ASSIGN: "=",
+	DEFINE: ":=",
+
+	LPAREN: "(",
+	RPAREN: ")",
+	LBRACE: "{",
+	RBRACE: "}",
+
+	COMMA:     ",",
+	SEMICOLON: ";",
 }
 
-func (i Token) IdentName() string {
-	return i.Literal
+func (tok Token) String() string {
+	return fmt.Sprintf("%v:%q", tok.Type, tok.Literal)
 }
 
-func (i Token) RuneValue() rune {
-	if x, ok := i.Value.(rune); ok {
-		return x
+func (tokType TokenType) String() string {
+	s := ""
+	if 0 <= tokType && tokType < TokenType(len(tokens)) {
+		s = tokens[tokType]
 	}
-	x, _, _, _ := strconv.UnquoteChar(i.Literal, '\'')
-	i.Value = x
-	return x
-}
-func (i Token) IntValue() int64 {
-	if x, ok := i.Value.(int64); ok {
-		return x
+	if s == "" {
+		s = "token(" + strconv.Itoa(int(tokType)) + ")"
 	}
-	x, _ := strconv.ParseInt(i.Literal, 10, 64)
-	i.Value = x
-	return x
-}
-func (i Token) FloatValue() float64 {
-	if x, ok := i.Value.(float64); ok {
-		return x
-	}
-	x, _ := strconv.ParseFloat(i.Literal, 64)
-	i.Value = x
-	return x
-}
-
-func (i Token) StringValue() string {
-	if x, ok := i.Value.(string); ok {
-		return x
-	}
-	s, _ := strconv.Unquote(i.Literal)
-	i.Value = s
 	return s
 }
 
-func (a Token) equal(b Token) bool {
-	if a.Type != b.Type {
-		return false
-	}
-	if a.Literal != b.Literal {
-		return false
-	}
-	if a.Pos != NoPos && b.Pos != NoPos {
-		if a.Pos != b.Pos {
-			return false
-		}
-	}
-
-	return true
+var keywords = map[string]TokenType{
+	"package": PACKAGE,
+	"var":     VAR,
+	"func":    FUNC,
+	"if":      IF,
+	"else":    ELSE,
+	"for":     FOR,
 }
 
-func (i Token) String() string {
-	return fmt.Sprintf("{%v:%q}", i.Type, i.Literal)
+func Lookup(ident string) TokenType {
+	if tok, is_keyword := keywords[ident]; is_keyword {
+		return tok
+	}
+	return IDENT
+}
+
+func (op TokenType) Precedence() int {
+	switch op {
+	case EQL, NEQ, LSS, LEQ, GTR, GEQ:
+		return 1
+	case ADD, SUB:
+		return 2
+	case MUL, DIV, MOD:
+		return 3
+	}
+	return 0
+}
+
+func (i Token) IntValue() int {
+	x, err := strconv.ParseInt(i.Literal, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+	return int(x)
 }

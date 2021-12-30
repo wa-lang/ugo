@@ -5,59 +5,133 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
-func (p *parser) parseStmt() ast.Stmt {
-	switch tok := p.r.PeekToken(); tok.Type {
+func (p *Parser) parseStmt() ast.Stmt {
+	switch tok := p.PeekToken(); tok.Type {
 	case token.EOF:
 		return nil
-	case token.ILLEGAL:
-		panic(tok)
-
+	case token.ERROR:
+		p.errorf(tok.Pos, "invalid token: %s", tok.Literal)
 	case token.SEMICOLON:
+		p.AcceptTokenList(token.SEMICOLON)
 		return nil
+
 	case token.LBRACE: // {}
 		return p.parseStmt_block()
 
-	case token.TYPE: // const x = ...
-		return p.parseStmt_type()
-	case token.CONST: // const x = ...
-		return p.parseStmt_const()
-	case token.VAR: // var x = ...
+	case token.VAR:
 		return p.parseStmt_var()
-
-	case token.IF: // if ...
-		return p.parseStmt_if()
-	case token.FOR: // for ...
-		return p.parseStmt_for()
-	case token.DEFER: // defer ...
-		return p.parseStmt_defer()
-	case token.RETURN: // return ...
-		return p.parseStmt_return()
 
 	default:
 		// exprList ;
 		// exprList := exprList;
 		// exprList = exprList;
 		exprList := p.parseExprList()
-		switch tok := p.r.PeekToken(); tok.Type {
-		case token.SEMICOLON:
+		switch tok := p.PeekToken(); tok.Type {
+		case token.SEMICOLON, token.LBRACE:
+			if len(exprList) != 1 {
+				p.errorf(tok.Pos, "unknown token: %v", tok.Type)
+			}
 			return &ast.ExprStmt{
 				X: exprList[0],
 			}
-		case token.DEFINE:
-			valueList := p.parseExprList()
-			return &ast.AssignStmt{
-				Target: exprList[0],
-				Value:  valueList[0],
+		case token.DEFINE, token.ASSIGN:
+			p.ReadToken()
+			exprValueList := p.parseExprList()
+			if len(exprList) != len(exprValueList) {
+				p.errorf(tok.Pos, "unknown token: %v", tok)
 			}
-		case token.ASSIGN:
-			valueList := p.parseExprList()
-			return &ast.AssignStmt{
-				Target: exprList[0],
-				Value:  valueList[0],
+			var assignStmt = &ast.AssignStmt{
+				Target: make([]*ast.Ident, len(exprList)),
+				OpPos:  tok.Pos,
+				Op:     tok.Type,
+				Value:  make([]ast.Expr, len(exprList)),
 			}
+			for i, target := range exprList {
+				assignStmt.Target[i] = target.(*ast.Ident)
+				assignStmt.Value[i] = exprValueList[i]
+			}
+			return assignStmt
+		default:
+			p.errorf(tok.Pos, "unknown token: %v", tok)
+		}
+	}
+
+	panic("unreachable")
+}
+
+func (p *Parser) parseStmt_block() *ast.BlockStmt {
+	block := &ast.BlockStmt{}
+
+	tokBegin := p.MustAcceptToken(token.LBRACE) // {
+
+Loop:
+	for {
+		switch tok := p.PeekToken(); tok.Type {
+		case token.EOF:
+			break Loop
+		case token.ERROR:
+			p.errorf(tok.Pos, "invalid token: %s", tok.Literal)
+		case token.SEMICOLON:
+			p.AcceptTokenList(token.SEMICOLON)
+
+		case token.LBRACE: // {}
+			block.List = append(block.List, p.parseStmt_block())
+		case token.RBRACE: // }
+			break Loop
+
+		case token.VAR:
+			block.List = append(block.List, p.parseStmt_var())
+		case token.IF:
+			block.List = append(block.List, p.parseStmt_if())
+		case token.FOR:
+			block.List = append(block.List, p.parseStmt_for())
 
 		default:
-			panic("aa")
+			// exprList ;
+			// exprList := exprList;
+			// exprList = exprList;
+			exprList := p.parseExprList()
+			switch tok := p.PeekToken(); tok.Type {
+			case token.SEMICOLON:
+				if len(exprList) != 1 {
+					p.errorf(tok.Pos, "unknown token: %v", tok.Type)
+				}
+				block.List = append(block.List, &ast.ExprStmt{
+					X: exprList[0],
+				})
+			case token.DEFINE, token.ASSIGN:
+				p.ReadToken()
+				exprValueList := p.parseExprList()
+				if len(exprList) != len(exprValueList) {
+					p.errorf(tok.Pos, "unknown token: %v", tok)
+				}
+				var assignStmt = &ast.AssignStmt{
+					Target: make([]*ast.Ident, len(exprList)),
+					OpPos:  tok.Pos,
+					Op:     tok.Type,
+					Value:  make([]ast.Expr, len(exprList)),
+				}
+				for i, target := range exprList {
+					assignStmt.Target[i] = target.(*ast.Ident)
+					assignStmt.Value[i] = exprValueList[i]
+				}
+				block.List = append(block.List, assignStmt)
+			default:
+				p.errorf(tok.Pos, "unknown token: %v", tok)
+			}
 		}
+	}
+
+	tokEnd := p.MustAcceptToken(token.RBRACE) // }
+
+	block.Lbrace = tokBegin.Pos
+	block.Rbrace = tokEnd.Pos
+
+	return block
+}
+
+func (p *Parser) parseStmt_expr() *ast.ExprStmt {
+	return &ast.ExprStmt{
+		X: p.parseExpr(),
 	}
 }

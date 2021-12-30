@@ -1,16 +1,6 @@
-dev:
-	go run main.go \
-		-debug=false \
-		-lex=false \
-		-ast=true \
-		-llir=false \
-		-mode=file \
-		-file=file.ugo
-
-expr:
-	go run main.go -lex -ast -llir -mode=expr -file=expr.ugo
-
-wc:
-	wc -l */*.go
+default:
+	go run main.go -debug=false ast ./_examples/hello.ugo
+	go run main.go -debug=false asm ./_examples/hello.ugo
+	go run main.go -debug=true run ./_examples/hello.ugo
 
 clean:

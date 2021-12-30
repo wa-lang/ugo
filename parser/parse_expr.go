@@ -1,153 +1,113 @@
 package parser
 
 import (
-	"fmt"
+	"strconv"
 
 	"github.com/chai2010/ugo/ast"
-	"github.com/chai2010/ugo/logger"
 	"github.com/chai2010/ugo/token"
 )
 
 // x, y :=
-func (p *parser) parseExprList() (exprs []ast.Expr) {
+func (p *Parser) parseExprList() (exprs []ast.Expr) {
 	for {
 		exprs = append(exprs, p.parseExpr())
-		if p.r.PeekToken().Type != token.COMMA {
+		if p.PeekToken().Type != token.COMMA {
 			break
 		}
+		p.ReadToken()
 	}
-
-	p.r.AcceptTokenList(token.SEMICOLON)
 	return
 }
 
-func (p *parser) parseExpr() ast.Expr {
-	logger.Debugln("peek =", p.r.PeekToken())
+func (p *Parser) parseExpr() ast.Expr {
+	return p.parseExpr_binary(1)
+}
 
-	expr := p.parseExpr_mul()
-
+func (p *Parser) parseExpr_binary(prec int) ast.Expr {
+	x := p.parseExpr_unary()
 	for {
-		switch p.r.PeekToken().Type {
-		case token.ADD, token.SUB:
-			tok := p.r.ReadToken()
-			expr = &ast.BinaryExpr{
-				X:  expr,
-				Op: tok,
-				Y:  p.parseExpr_mul(),
-			}
-		default:
-			return expr
+		switch tok := p.PeekToken(); tok.Type {
+		case token.EOF:
+			return x
+		case token.SEMICOLON: // ;
+			return x
 		}
+
+		op := p.PeekToken()
+		if op.Type.Precedence() < prec {
+			return x
+		}
+
+		p.MustAcceptToken(op.Type)
+		y := p.parseExpr_binary(op.Type.Precedence() + 1)
+		x = &ast.BinaryExpr{OpPos: op.Pos, Op: op.Type, X: x, Y: y}
 	}
 }
 
-func (p *parser) parseExpr_mul() ast.Expr {
-	logger.Debugln("peek =", p.r.PeekToken())
-
-	expr := p.parseExpr_unary()
-	for {
-		switch p.r.PeekToken().Type {
-		case token.SEMICOLON:
-			return expr
-		case token.MUL, token.QUO:
-			tok := p.r.ReadToken()
-			expr = &ast.BinaryExpr{
-				X:  expr,
-				Op: tok,
-				Y:  p.parseExpr_unary(),
-			}
-		default:
-			return expr
-		}
-	}
-}
-
-func (p *parser) parseExpr_unary() ast.Expr {
-	logger.Debugln("peek =", p.r.PeekToken())
-
-	if _, ok := p.r.AcceptToken(token.ADD); ok {
+func (p *Parser) parseExpr_unary() ast.Expr {
+	if _, ok := p.AcceptToken(token.ADD); ok {
 		return p.parseExpr_primary()
 	}
-	if _, ok := p.r.AcceptToken(token.SUB); ok {
+	if tok, ok := p.AcceptToken(token.SUB); ok {
 		return &ast.UnaryExpr{
-			X: p.parseExpr_primary(),
+			OpPos: tok.Pos,
+			Op:    tok.Type,
+			X:     p.parseExpr_primary(),
 		}
 	}
 	return p.parseExpr_primary()
 }
+func (p *Parser) parseExpr_primary() ast.Expr {
+	if _, ok := p.AcceptToken(token.LPAREN); ok {
+		expr := p.parseExpr()
+		p.MustAcceptToken(token.RPAREN)
+		return expr
+	}
 
-func (p *parser) parseExpr_primary() ast.Expr {
-	logger.Debugln("peek =", p.r.PeekToken())
+	switch tok := p.PeekToken(); tok.Type {
+	case token.IDENT: // call
+		p.ReadToken()
+		nextTok := p.PeekToken()
+		p.UnreadToken()
 
-	peek := p.r.PeekToken()
-
-	switch peek.Type {
-	case token.IDENT:
-		ident := p.r.ReadToken()
-		if lparen, ok := p.r.AcceptToken(token.LPAREN); ok {
-			var args []ast.Expr
-			for {
-				if rparen, ok := p.r.AcceptToken(token.RPAREN); ok {
-					return &ast.CallExpr{
-						Fun: &ast.Ident{
-							NamePos: ident.Pos,
-							Name:    ident.IdentName(),
-						},
-						Lparen: lparen.Pos,
-						Args:   args,
-						Rparen: rparen.Pos,
-					}
-				}
-				args = append(args, p.parseExpr())
-				p.r.AcceptToken(token.COMMA)
+		switch nextTok.Type {
+		case token.LPAREN:
+			return p.parseExpr_call()
+		default:
+			p.MustAcceptToken(token.IDENT)
+			return &ast.Ident{
+				NamePos: tok.Pos,
+				Name:    tok.Literal,
 			}
 		}
-		return &ast.Ident{
-			NamePos: ident.Pos,
-			Name:    ident.IdentName(),
-		}
-	case token.INT:
-		tok := p.r.ReadToken()
-		return &ast.Number{
-			ValuePos: tok.Pos,
-			Value:    tok.IntValue(),
-			ValueEnd: tok.EndPos(),
-		}
-	case token.FLOAT:
-		tok := p.r.ReadToken()
-		return &ast.Number{
-			ValuePos: tok.Pos,
-			Value:    tok.FloatValue(),
-			ValueEnd: tok.EndPos(),
-		}
 
-	case token.LPAREN:
-		p.r.ReadToken()
-		expr := p.parseExpr()
-		if _, ok := p.r.AcceptToken(token.RPAREN); !ok {
-			p.err = fmt.Errorf("todo")
-			panic(p.err)
+	case token.NUMBER:
+		tokNumber := p.MustAcceptToken(token.NUMBER)
+		value, _ := strconv.Atoi(tokNumber.Literal)
+		return &ast.Number{
+			ValuePos: tokNumber.Pos,
+			ValueEnd: tokNumber.Pos + token.Pos(len(tokNumber.Literal)),
+			Value:    value,
 		}
-		p.r.ReadToken()
-		return expr
 	default:
-		panic(fmt.Errorf("expr: %v", p.r.PeekToken()))
+		p.errorf(tok.Pos, "unknown tok: type=%v, lit=%q", tok.Type, tok.Literal)
+		panic("unreachable")
 	}
 }
 
-func (p *parser) parseExpr_call() *ast.CallExpr {
-	tokIdent := p.r.MustAcceptToken(token.IDENT)
-	tokLparen := p.r.MustAcceptToken(token.LPAREN)
-	args := p.parseExprList()
-	tokRparen := p.r.MustAcceptToken(token.RPAREN)
+func (p *Parser) parseExpr_call() *ast.CallExpr {
+	tokIdent := p.MustAcceptToken(token.IDENT)
+	tokLparen := p.MustAcceptToken(token.LPAREN)
+	arg0 := p.parseExpr()
+	tokRparen := p.MustAcceptToken(token.RPAREN)
 
 	return &ast.CallExpr{
-		Fun: &ast.Ident{
+		FuncName: &ast.Ident{
 			NamePos: tokIdent.Pos,
-			Name:    tokIdent.IdentName(),
+			Name:    tokIdent.Literal,
 		},
 		Lparen: tokLparen.Pos,
-		Args:   args,
+		Args:   []ast.Expr{arg0},
 		Rparen: tokRparen.Pos,
 	}
 }

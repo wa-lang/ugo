@@ -5,9 +5,9 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
-func (p *parser) parseStmt_var() *ast.VarSpec {
-	tokVar := p.r.MustAcceptToken(token.VAR)
-	tokIdent := p.r.MustAcceptToken(token.IDENT)
+func (p *Parser) parseStmt_var() *ast.VarSpec {
+	tokVar := p.MustAcceptToken(token.VAR)
+	tokIdent := p.MustAcceptToken(token.IDENT)
 
 	var varSpec = &ast.VarSpec{
 		VarPos: tokVar.Pos,
@@ -15,29 +15,20 @@ func (p *parser) parseStmt_var() *ast.VarSpec {
 
 	varSpec.Name = &ast.Ident{
 		NamePos: tokIdent.Pos,
-		Name:    tokIdent.IdentName(),
+		Name:    tokIdent.Literal,
 	}
 
-	switch p.r.PeekToken().Type {
-	case token.IDENT:
-	case token.LBRACK: // []T
-	case token.STRUCT:
-	case token.MAP:
-	case token.INTERFACE:
-	default:
-	}
-
-	if typ, ok := p.r.AcceptToken(token.IDENT); ok {
+	if typ, ok := p.AcceptToken(token.IDENT); ok {
 		varSpec.Type = &ast.Ident{
 			NamePos: typ.Pos,
-			Name:    typ.IdentName(),
+			Name:    typ.Literal,
 		}
 	}
 
-	if _, ok := p.r.AcceptToken(token.ASSIGN); ok {
+	if _, ok := p.AcceptToken(token.ASSIGN); ok {
 		varSpec.Value = p.parseExpr()
 	}
 
-	p.r.AcceptTokenList(token.SEMICOLON)
+	p.AcceptTokenList(token.SEMICOLON)
 	return varSpec
 }

@@ -2,140 +2,215 @@ package lexer
 
 import (
 	"fmt"
-	"strings"
-	"unicode/utf8"
 
 	"github.com/chai2010/ugo/token"
 )
 
-const eof = 0
-
-type Option struct {
-	SkipComment    bool
-	DontInsertSemi bool
-}
-
-func Lex(name, input string, opt Option) []token.Token {
-	l := &lexer{
-		name:  name,
-		input: input,
-		opt:   opt,
-	}
-	l.run()
-
-	if len(l.items) == 0 {
-		l.items = append(l.items, token.Token{Type: token.EOF})
-	}
-
-	if l.items[len(l.items)-1].Type != token.EOF {
-		l.items = append(l.items, token.Token{Type: token.EOF})
-	}
-
-	// remove multi ';'
-	items := l.items[:0]
-	for _, x := range l.items[:] {
-		if x.Type == token.COMMENT {
-			continue
-		}
-		if x.Type == token.SEMICOLON && len(items) > 0 {
-			if items[len(items)-1].Type == token.SEMICOLON {
-				continue
-			}
-		}
-		items = append(items, x)
-	}
-
-	l.items = items
-	return l.items
-}
-
-// lexer holds the state of the scanner.
-type lexer struct {
-	opt   Option
-	name  string        // used only for error reports.
-	input string        // the string being scanned.
-	start int           // start position of this item.
-	pos   int           // current position in the input.
-	width int           // width of last rune read from input.
-	items []token.Token // channel of scanned items.
-}
-
-// next returns the next rune in the input.
-func (l *lexer) next() (rune int) {
-	if l.pos >= len(l.input) {
-		l.width = 0
-		return eof
-	}
-	r, size := utf8.DecodeRuneInString(l.input[l.pos:])
-	rune, l.width = int(r), size
-	l.pos += l.width
+func Lex(name, input string) (tokens, comments []token.Token) {
+	l := NewLexer(name, input)
+	tokens = l.Tokens()
+	comments = l.Comments()
 	return
 }
 
-// peek returns but does not consume
-// the next rune in the input.
-func (l *lexer) peek() int {
-	rune := l.next()
-	l.backup()
-	return rune
+type Lexer struct {
+	src      *SourceStream
+	tokens   []token.Token
+	comments []token.Token
 }
 
-// backup steps back one rune.
-// Can be called only once per call of next.
-func (l *lexer) backup() {
-	l.pos -= l.width
-}
-
-// emit passes an item back to the client.
-func (l *lexer) emit(typ token.TokenType) {
-	tok := token.Token{
-		Type:    typ,
-		Literal: l.input[l.start:l.pos],
-		Pos:     token.Pos(l.start + 1),
+func NewLexer(name, input string) *Lexer {
+	return &Lexer{
+		src: NewSourceStream(name, input),
 	}
+}
 
+func (p *Lexer) Tokens() []token.Token {
+	if len(p.tokens) == 0 {
+		p.run()
+	}
+	return p.tokens
+}
+
+func (p *Lexer) Comments() []token.Token {
+	if len(p.tokens) == 0 {
+		p.run()
+	}
+	return p.comments
+}
+
+func (p *Lexer) emit(typ token.TokenType) {
+	lit, pos := p.src.EmitToken()
+	if typ == token.EOF {
+		pos = p.src.Pos()
+		lit = ""
+	}
 	if typ == token.IDENT {
-		tok.Type = token.Lookup(tok.Literal)
+		typ = token.Lookup(lit)
 	}
-
-	l.items = append(l.items, tok)
-	l.start = l.pos
-}
-
-// ignore skips over the pending input before this point.
-func (l *lexer) ignore() {
-	l.start = l.pos
-}
-
-// accept consumes the next rune
-// if it's from the valid set.
-func (l *lexer) accept(valid string) bool {
-	if strings.IndexRune(valid, rune(l.next())) >= 0 {
-		return true
-	}
-	l.backup()
-	return false
-}
-
-// acceptRun consumes a run of runes from the valid set.
-func (l *lexer) acceptRun(valid string) {
-	for strings.IndexRune(valid, rune(l.next())) >= 0 {
-	}
-	l.backup()
-}
-
-// lineNumber reports which line we're on. Doing it this way
-// means we don't have to worry about peek double counting.
-func (l *lexer) lineNumber() int {
-	return 1 + strings.Count(l.input[:l.pos], "\n")
-}
-
-// error returns an error token and terminates the scan by passing
-// back a nil pointer that will be the next state, terminating l.run.
-func (l *lexer) errorf(format string, args ...interface{}) {
-	l.items = append(l.items, token.Token{
-		Type:    token.ILLEGAL,
-		Literal: fmt.Sprintf(format, args...),
-		Pos:     token.Pos(l.start + 1),
+	p.tokens = append(p.tokens, token.Token{
+		Type:    typ,
+		Literal: lit,
+		Pos:     token.Pos(pos + 1),
 	})
+}
+
+func (p *Lexer) emitComment() {
+	lit, pos := p.src.EmitToken()
+
+	p.comments = append(p.comments, token.Token{
+		Type:    token.COMMENT,
+		Literal: lit,
+		Pos:     token.Pos(pos + 1),
+	})
+}
+
+func (p *Lexer) errorf(format string, args ...interface{}) {
+	tok := token.Token{
+		Type:    token.ERROR,
+		Literal: fmt.Sprintf(format, args...),
+		Pos:     token.Pos(p.src.Pos() + 1),
+	}
+	p.tokens = append(p.tokens, tok)
+	panic(tok)
+}
+
+func (p *Lexer) run() (tokens []token.Token) {
+	defer func() {
+		tokens = p.tokens
+		if r := recover(); r != nil {
+			if _, ok := r.(token.Token); !ok {
+				panic(r)
+			}
+		}
+	}()
+
+	for {
+		r := p.src.Read()
+		if r == rune(token.EOF) {
+			p.emit(token.EOF)
+			return
+		}
+
+		switch {
+		case r == '\n':
+			p.src.IgnoreToken()
+
+			if len(p.tokens) > 0 {
+				switch p.tokens[len(p.tokens)-1].Type {
+				case token.RPAREN, token.IDENT, token.NUMBER:
+					p.emit(token.SEMICOLON)
+				}
+			}
+
+		case isSpace(r):
+			p.src.IgnoreToken()
+
+		case isAlpha(r):
+			p.src.Unread()
+			for {
+				if r := p.src.Read(); !isAlphaNumeric(r) {
+					p.src.Unread()
+					p.emit(token.IDENT)
+					break
+				}
+			}
+
+		case ('0' <= r && r <= '9'): // 123, 1.0
+			p.src.Unread()
+
+			digits := "0123456789"
+			p.src.AcceptRun(digits)
+			p.emit(token.NUMBER)
+
+		case r == '+': // +, +=, ++
+			p.emit(token.ADD)
+		case r == '-': // -, -=, --
+			p.emit(token.SUB)
+		case r == '*': // *, *=
+			p.emit(token.MUL)
+		case r == '/': // /, //, /*, /=
+			if p.src.Peek() != '/' {
+				p.emit(token.DIV)
+			} else {
+				// line comment
+				for {
+					t := p.src.Read()
+					if t == '\n' {
+						p.src.Unread()
+						p.emitComment()
+						break
+					}
+					if t == rune(token.EOF) {
+						p.emitComment()
+						return
+					}
+				}
+			}
+		case r == '%': // %
+			p.emit(token.MOD)
+
+		case r == '=': // =, ==
+			switch p.src.Read() {
+			case '=':
+				p.emit(token.EQL)
+			default:
+				p.src.Unread()
+				p.emit(token.ASSIGN)
+			}
+
+		case r == '!': // !=
+			switch p.src.Read() {
+			case '=':
+				p.emit(token.NEQ)
+			default:
+				p.errorf("unrecognized character: %#U", r)
+			}
+
+		case r == '<': // <, <=
+			switch p.src.Read() {
+			case '=':
+				p.emit(token.LEQ)
+			default:
+				p.src.Unread()
+				p.emit(token.LSS)
+			}
+
+		case r == '>': // >, >=
+			switch p.src.Read() {
+			case '=':
+				p.emit(token.GEQ)
+			default:
+				p.src.Unread()
+				p.emit(token.GTR)
+			}
+
+		case r == ':': // :, :=
+			switch p.src.Read() {
+			case '=':
+				p.emit(token.DEFINE)
+			default:
+				p.errorf("unrecognized character: %#U", r)
+			}
+
+		case r == '(':
+			p.emit(token.LPAREN)
+		case r == '{':
+			p.emit(token.LBRACE)
+
+		case r == ')':
+			p.emit(token.RPAREN)
+		case r == '}':
+			p.emit(token.RBRACE)
+
+		case r == ',':
+			p.emit(token.COMMA)
+		case r == ';':
+			p.emit(token.SEMICOLON)
+
+		default:
+			p.errorf("unrecognized character: %#U", r)
+			return
+		}
+	}
 }

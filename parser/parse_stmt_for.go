@@ -5,16 +5,16 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
-func (p *parser) parseStmt_for() *ast.ForStmt {
-	tokFor := p.r.MustAcceptToken(token.FOR)
+func (p *Parser) parseStmt_for() *ast.ForStmt {
+	tokFor := p.MustAcceptToken(token.FOR)
 
 	forStmt := &ast.ForStmt{
 		For: tokFor.Pos,
 	}
 
 	// for {}
-	if _, ok := p.r.AcceptToken(token.LBRACE); ok {
-		p.r.UnreadToken()
+	if _, ok := p.AcceptToken(token.LBRACE); ok {
+		p.UnreadToken()
 		forStmt.Body = p.parseStmt_block()
 		return forStmt
 	}
@@ -23,14 +23,14 @@ func (p *parser) parseStmt_for() *ast.ForStmt {
 	// for Init?; Cond?; Post? {}
 
 	// for ; ...
-	if _, ok := p.r.AcceptToken(token.SEMICOLON); ok {
+	if _, ok := p.AcceptToken(token.SEMICOLON); ok {
 		forStmt.Init = nil
 
 		// for ;; ...
-		if _, ok := p.r.AcceptToken(token.SEMICOLON); ok {
-			if _, ok := p.r.AcceptToken(token.LBRACE); ok {
+		if _, ok := p.AcceptToken(token.SEMICOLON); ok {
+			if _, ok := p.AcceptToken(token.LBRACE); ok {
 				// for ;; {}
-				p.r.UnreadToken()
+				p.UnreadToken()
 				forStmt.Body = p.parseStmt_block()
 				return forStmt
 			} else {
@@ -42,10 +42,10 @@ func (p *parser) parseStmt_for() *ast.ForStmt {
 		} else {
 			// for ; cond ; ... {}
 			forStmt.Cond = p.parseExpr()
-			p.r.MustAcceptToken(token.SEMICOLON)
-			if _, ok := p.r.AcceptToken(token.LBRACE); ok {
+			p.MustAcceptToken(token.SEMICOLON)
+			if _, ok := p.AcceptToken(token.LBRACE); ok {
 				// for ; cond ; {}
-				p.r.UnreadToken()
+				p.UnreadToken()
 				forStmt.Body = p.parseStmt_block()
 				return forStmt
 			} else {
@@ -58,9 +58,9 @@ func (p *parser) parseStmt_for() *ast.ForStmt {
 	} else {
 		stmt := p.parseStmt()
 
-		if _, ok := p.r.AcceptToken(token.LBRACE); ok {
+		if _, ok := p.AcceptToken(token.LBRACE); ok {
 			// for cond {}
-			p.r.UnreadToken()
+			p.UnreadToken()
 			if expr, ok := stmt.(ast.Expr); ok {
 				forStmt.Cond = expr
 			}
@@ -68,13 +68,14 @@ func (p *parser) parseStmt_for() *ast.ForStmt {
 			return forStmt
 		} else {
 			// for init;
-			p.r.MustAcceptToken(token.SEMICOLON)
+			p.MustAcceptToken(token.SEMICOLON)
+			forStmt.Init = stmt
 
 			// for ;; ...
-			if _, ok := p.r.AcceptToken(token.SEMICOLON); ok {
-				if _, ok := p.r.AcceptToken(token.LBRACE); ok {
+			if _, ok := p.AcceptToken(token.SEMICOLON); ok {
+				if _, ok := p.AcceptToken(token.LBRACE); ok {
 					// for ;; {}
-					p.r.UnreadToken()
+					p.UnreadToken()
 					forStmt.Body = p.parseStmt_block()
 					return forStmt
 				} else {
@@ -86,10 +87,10 @@ func (p *parser) parseStmt_for() *ast.ForStmt {
 			} else {
 				// for ; cond ; ... {}
 				forStmt.Cond = p.parseExpr()
-				p.r.MustAcceptToken(token.SEMICOLON)
-				if _, ok := p.r.AcceptToken(token.LBRACE); ok {
+				p.MustAcceptToken(token.SEMICOLON)
+				if _, ok := p.AcceptToken(token.LBRACE); ok {
 					// for ; cond ; {}
-					p.r.UnreadToken()
+					p.UnreadToken()
 					forStmt.Body = p.parseStmt_block()
 					return forStmt
 				} else {

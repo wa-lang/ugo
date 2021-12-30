@@ -1,84 +1,200 @@
 package main
 
 import (
-	"flag"
 	"fmt"
 	"os"
-	"strings"
+	"os/exec"
+	"runtime"
 
-	"github.com/chai2010/ugo/ast"
-	"github.com/chai2010/ugo/logger"
-	"github.com/chai2010/ugo/runner"
-	"github.com/chai2010/ugo/token"
+	"github.com/urfave/cli/v2"
+
+	"github.com/chai2010/ugo/build"
 )
-
-var (
-	flagFile = flag.String("file", "", "set ugo file")
-	flagCode = flag.String("code", "", "set ugo code")
-	flagMode = flag.String("mode", "expr", "set ugo code mode(expr|file)")
-
-	flagLex  = flag.Bool("lex", false, "show lex tokens")
-	flagAst  = flag.Bool("ast", false, "show ast")
-	flagLLIR = flag.Bool("llir", false, "show llvm ir")
-
-	flagDebug = flag.Bool("debug", false, "set debug mode")
-)
-
-func init() {
-	if strings.Contains(os.Args[0], "go-build") {
-		os.Args[0] = "ugo"
-	}
-}
 
 func main() {
-	flag.Parse()
-	logger.DebugMode = *flagDebug
+	app := cli.NewApp()
+	app.Name = "ugo"
+	app.Usage = "ugo is a tool for managing µGo source code."
+	app.Version = "0.0.1"
 
-	filename := *flagFile
-	code := *flagCode
-
-	if filename == "" && code == "" {
-		fmt.Printf("ERR: no code")
-		os.Exit(1)
+	app.Flags = []cli.Flag{
+		&cli.StringFlag{Name: "goos", Usage: "set GOOS", Value: runtime.GOOS},
+		&cli.StringFlag{Name: "goarch", Usage: "set GOARCH", Value: runtime.GOARCH},
+		&cli.StringFlag{Name: "clang", Value: "", Usage: "set clang"},
+		&cli.StringFlag{Name: "wasm-llc", Value: "", Usage: "set wasm-llc"},
+		&cli.StringFlag{Name: "wasm-ld", Value: "", Usage: "set wasm-ld"},
+		&cli.BoolFlag{Name: "debug", Aliases: []string{"d"}, Usage: "set debug mode"},
 	}
-	if code == "" {
-		data, err := os.ReadFile(filename)
-		if err != nil {
-			fmt.Printf("ERR: %v", err)
+
+	app.Action = func(c *cli.Context) error {
+		if c.NArg() == 0 {
+			fmt.Fprintln(os.Stderr, "no input file")
 			os.Exit(1)
 		}
-		code = string(data)
-	}
-	if filename == "" {
-		filename = "_a.out.ugo"
-	}
 
-	app := runner.NewApp(filename, code, runner.CodeMode(*flagMode))
-
-	if *flagLex {
-		if _, err := os.Lstat(filename); err != nil {
-			os.WriteFile(filename, []byte(code), 0666)
+		ctx := build.NewContext(build_Options(c))
+		data, err := ctx.Run(c.Args().First(), nil)
+		if len(data) != 0 {
+			fmt.Print(string(data))
 		}
-
-		fmt.Println("lex:")
-		for i, x := range app.GetTokens() {
-			fmt.Printf("\t%03d: %-20v # %v\n", i, x, token.PosString(filename, []byte(code), x.Pos))
+		if errx, ok := err.(*exec.ExitError); ok {
+			os.Exit(errx.ExitCode())
 		}
-	}
-	if *flagAst {
-		node, _ := app.GetAST()
-		fmt.Println("ast:")
-		ast.Print(node)
-	}
-
-	if *flagLLIR {
-		llir, _ := app.GetLLIR()
-		fmt.Println("llir:")
-		fmt.Println(llir)
+		if err != nil {
+			fmt.Println(err)
+		}
+		return nil
 	}
 
-	if err := app.Run(); err != nil {
-		fmt.Println("ERR:", err)
-		os.Exit(1)
+	app.Commands = []*cli.Command{
+		{
+			Name:  "run",
+			Usage: "compile and run µGo program",
+			Action: func(c *cli.Context) error {
+				if c.NArg() == 0 {
+					fmt.Fprintf(os.Stderr, "no input file")
+					os.Exit(1)
+				}
+
+				ctx := build.NewContext(build_Options(c))
+				data, err := ctx.Run(c.Args().First(), nil)
+				if len(data) != 0 {
+					fmt.Print(string(data))
+				}
+				if errx, ok := err.(*exec.ExitError); ok {
+					os.Exit(errx.ExitCode())
+				}
+				if err != nil {
+					fmt.Println(err)
+				}
+				return nil
+			},
+		},
+		{
+			Name:  "build",
+			Usage: "compile µGo source code",
+			Action: func(c *cli.Context) error {
+				if c.NArg() == 0 {
+					fmt.Fprintf(os.Stderr, "no input file")
+					os.Exit(1)
+				}
+
+				ctx := build.NewContext(build_Options(c))
+				data, err := ctx.Build(c.Args().First(), nil, "")
+				if len(data) != 0 {
+					fmt.Print(string(data))
+				}
+				if errx, ok := err.(*exec.ExitError); ok {
+					os.Exit(errx.ExitCode())
+				}
+				if err != nil {
+					fmt.Println(err)
+				}
+				return nil
+			},
+		},
+		{
+			Name:  "lex",
+			Usage: "lex µGo source code and print token list",
+			Action: func(c *cli.Context) error {
+				if c.NArg() == 0 {
+					fmt.Fprintf(os.Stderr, "no input file")
+					os.Exit(1)
+				}
+
+				filename := c.Args().First()
+				code, err := os.ReadFile(filename)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+
+				ctx := build.NewContext(build_Options(c))
+				tokens, comments, err := ctx.Lex(c.Args().First(), nil)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+
+				for i, tok := range tokens {
+					fmt.Printf(
+						"%02d: %-12v: %-20q // %s\n",
+						i, tok.Type, tok.Literal,
+						tok.Pos.Position(filename, string(code)),
+					)
+				}
+
+				if len(comments) != 0 {
+					fmt.Println("----")
+				}
+
+				for i, tok := range comments {
+					fmt.Printf(
+						"%02d: %-12v: %-20q // %s\n",
+						i, tok.Type, tok.Literal,
+						tok.Pos.Position(filename, string(code)),
+					)
+				}
+				return nil
+			},
+		},
+		{
+			Name:  "ast",
+			Usage: "parse µGo source code and print ast",
+			Flags: []cli.Flag{
+				&cli.BoolFlag{Name: "json", Usage: "output json format"},
+			},
+			Action: func(c *cli.Context) error {
+				if c.NArg() == 0 {
+					fmt.Fprintf(os.Stderr, "no input file")
+					os.Exit(1)
+				}
+
+				ctx := build.NewContext(build_Options(c))
+				f, err := ctx.AST(c.Args().First(), nil)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				if c.Bool("json") {
+					fmt.Println(f.JSONString())
+				} else {
+					fmt.Println(f.String())
+				}
+				return nil
+			},
+		},
+		{
+			Name:  "asm",
+			Usage: "parse µGo source code and print llvm-ir",
+			Action: func(c *cli.Context) error {
+				if c.NArg() == 0 {
+					fmt.Fprintf(os.Stderr, "no input file")
+					os.Exit(1)
+				}
+
+				ctx := build.NewContext(build_Options(c))
+				ll, err := ctx.ASM(c.Args().First(), nil)
+				if err != nil {
+					fmt.Println(err)
+					os.Exit(1)
+				}
+				fmt.Println(ll)
+				return nil
+			},
+		},
+	}
+
+	app.Run(os.Args)
+}
+
+func build_Options(c *cli.Context) *build.Option {
+	return &build.Option{
+		Debug:   c.Bool("debug"),
+		GOOS:    c.String("goos"),
+		GOARCH:  c.String("goarch"),
+		Clang:   c.String("clang"),
+		WasmLLC: c.String("wasm-llc"),
+		WasmLD:  c.String("wasm-ld"),
 	}
 }

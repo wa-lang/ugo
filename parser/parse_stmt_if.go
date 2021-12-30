@@ -5,19 +5,30 @@ import (
 	"github.com/chai2010/ugo/token"
 )
 
-func (p *parser) parseStmt_if() *ast.IfStmt {
-	tokIf := p.r.MustAcceptToken(token.IF)
-	cond := p.parseExpr()
-	body := p.parseStmt_block()
+func (p *Parser) parseStmt_if() *ast.IfStmt {
+	tokIf := p.MustAcceptToken(token.IF)
 
 	ifStmt := &ast.IfStmt{
-		If:   tokIf.Pos,
-		Cond: cond,
-		Body: body,
+		If: tokIf.Pos,
 	}
 
-	if _, ok := p.r.AcceptToken(token.ELSE); ok {
-		switch p.r.PeekToken().Type {
+	stmt := p.parseStmt()
+	if _, ok := p.AcceptToken(token.SEMICOLON); ok {
+		ifStmt.Init = stmt
+		ifStmt.Cond = p.parseExpr()
+		ifStmt.Body = p.parseStmt_block()
+	} else {
+		ifStmt.Init = nil
+		if cond, ok := stmt.(*ast.ExprStmt); ok {
+			ifStmt.Cond = cond.X
+		} else {
+			p.errorf(tokIf.Pos, "if cond expect expr: %#v", stmt)
+		}
+		ifStmt.Body = p.parseStmt_block()
+	}
+
+	if _, ok := p.AcceptToken(token.ELSE); ok {
+		switch p.PeekToken().Type {
 		case token.IF: // else if
 			ifStmt.Else = p.parseStmt_if()
 		default:
