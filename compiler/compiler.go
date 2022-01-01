@@ -55,7 +55,7 @@ func (p *Compiler) genMain(w io.Writer, file *ast.File) {
 		return
 	}
 	for _, fn := range file.Funcs {
-		if fn.Name == "main" {
+		if fn.Name.Name == "main" {
 			fmt.Fprint(w, builtin.MainMain)
 			return
 		}
@@ -107,25 +107,25 @@ func (p *Compiler) compileFile(w io.Writer, file *ast.File) {
 	p.genInit(w, file)
 }
 
-func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.Func) {
+func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.FuncDecl) {
 	defer p.restoreScope(p.scope)
 	p.enterScope()
 
-	var mangledName = fmt.Sprintf("@ugo_%s_%s", file.Pkg.Name, fn.Name)
+	var mangledName = fmt.Sprintf("@ugo_%s_%s", file.Pkg.Name, fn.Name.Name)
 
 	p.scope.Insert(&Object{
-		Name:        fn.Name,
+		Name:        fn.Name.Name,
 		MangledName: mangledName,
 		Node:        fn,
 	})
 
 	if fn.Body == nil {
-		fmt.Fprintf(w, "declare i32 @ugo_%s_%s()\n", file.Pkg.Name, fn.Name)
+		fmt.Fprintf(w, "declare i32 @ugo_%s_%s()\n", file.Pkg.Name, fn.Name.Name)
 		return
 	}
 	fmt.Fprintln(w)
 
-	fmt.Fprintf(w, "define i32 @ugo_%s_%s() {\n", file.Pkg.Name, fn.Name)
+	fmt.Fprintf(w, "define i32 @ugo_%s_%s() {\n", file.Pkg.Name, fn.Name.Name)
 	p.compileStmt(w, fn.Body)
 	fmt.Fprintln(w, "\tret i32 0")
 	fmt.Fprintln(w, "}")

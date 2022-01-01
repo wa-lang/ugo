@@ -11,7 +11,7 @@ var (
 	_ Node = (*PackageSpec)(nil)
 
 	_ Stmt = (*VarSpec)(nil)
-	_ Stmt = (*Func)(nil)
+	_ Stmt = (*FuncDecl)(nil)
 
 	_ Stmt = (*BlockStmt)(nil)
 	_ Stmt = (*ExprStmt)(nil)
@@ -39,9 +39,9 @@ func (p *VarSpec) Pos() token.Pos { return token.NoPos }
 func (p *VarSpec) End() token.Pos { return token.NoPos }
 func (p *VarSpec) node_type()     {}
 
-func (p *Func) Pos() token.Pos { return token.NoPos }
-func (p *Func) End() token.Pos { return token.NoPos }
-func (p *Func) node_type()     {}
+func (p *FuncDecl) Pos() token.Pos { return token.NoPos }
+func (p *FuncDecl) End() token.Pos { return token.NoPos }
+func (p *FuncDecl) node_type()     {}
 
 func (p *IfStmt) Pos() token.Pos { return p.If }
 func (p *IfStmt) End() token.Pos { return p.Body.End() }
@@ -62,8 +62,8 @@ func (p *UnaryExpr) node_type()  {}
 func (p *ParenExpr) node_type()  {}
 func (p *CallExpr) node_type()   {}
 
-func (p *VarSpec) stmt_type() {}
-func (p *Func) stmt_type()    {}
+func (p *VarSpec) stmt_type()  {}
+func (p *FuncDecl) stmt_type() {}
 
 func (p *BlockStmt) stmt_type()  {}
 func (p *ExprStmt) stmt_type()   {}

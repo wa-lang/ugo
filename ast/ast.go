@@ -18,7 +18,7 @@ type File struct {
 
 	Pkg     *PackageSpec // 包信息
 	Globals []*VarSpec   // 全局变量
-	Funcs   []*Func      // 函数列表
+	Funcs   []*FuncDecl  // 函数列表
 }
 
 // 包信息
@@ -26,6 +26,13 @@ type PackageSpec struct {
 	PkgPos  token.Pos // package 关键字位置
 	NamePos token.Pos // 包名位置
 	Name    string    // 包名
+}
+
+// ImportSpec 表示一个导入包
+type ImportSpec struct {
+	ImportPos token.Pos
+	Name      *Ident
+	Path      *Ident
 }
 
 // 变量信息
@@ -36,12 +43,64 @@ type VarSpec struct {
 	Value  Expr      // 变量表达式
 }
 
-// 函数信息
-type Func struct {
-	FuncPos token.Pos
-	NamePos token.Pos
-	Name    string
-	Body    *BlockStmt
+// 全局函数/方法
+type FuncDecl struct {
+	Recv *FieldList
+	Name *Ident
+	Type *FuncType
+	Body *BlockStmt
+}
+
+// 闭包函数
+type FuncLit struct {
+	Type *FuncType
+	Body *BlockStmt
+}
+
+// 函数类型
+type FuncType struct {
+	Func    token.Pos
+	Params  *FieldList
+	Results *FieldList
+}
+
+// 参数/属性 列表
+type FieldList struct {
+	Opening token.Pos
+	List    []*Field
+	Closing token.Pos
+}
+
+// 参数/属性
+type Field struct {
+	Names []*Ident // 名称列表, 多个名字共享一个类型
+	Type  Expr     // 类型
+}
+
+// defer 语句
+type DeferStmt struct {
+	DeferPos token.Pos
+	Call     *CallExpr
+}
+
+// return 语句
+type ReturnStmt struct {
+	ResultPos token.Pos
+	Results   []Expr
+}
+
+// 分支语句
+type BranchStmt struct {
+	TokPos  token.Pos
+	TokType token.TokenType // BREAK, CONTINUE, GOTO
+	Label   *Ident
+}
+
+// 标号语句
+type LabeledStmt struct {
+	Label *Ident
+	Colon token.Pos // 冒号 ":" 位置
+	Stmt  Stmt
 }
 
 // 块语句

@@ -28,6 +28,7 @@ const (
 	BREAK
 	CONTINUE
 	DEFER
+	GOTO
 
 	ADD // +
 	SUB // -
@@ -80,6 +81,7 @@ var tokens = [...]string{
 	BREAK:    "break",
 	CONTINUE: "continue",
 	DEFER:    "defer",
+	GOTO:     "goto",
 
 	ADD: "+",
 	SUB: "-",
@@ -133,6 +135,7 @@ var keywords = map[string]TokenType{
 	"break":    BREAK,
 	"continue": CONTINUE,
 	"defer":    DEFER,
+	"goto":     GOTO,
 }
 
 func Lookup(ident string) TokenType {
