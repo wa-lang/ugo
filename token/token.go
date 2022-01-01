@@ -18,11 +18,16 @@ const (
 	NUMBER
 
 	PACKAGE
+	IMPORT
 	VAR
 	FUNC
+	RETURN
 	IF
 	ELSE
 	FOR
+	BREAK
+	CONTINUE
+	DEFER
 
 	ADD // +
 	SUB // -
@@ -64,11 +69,17 @@ var tokens = [...]string{
 	IDENT:  "IDENT",
 	NUMBER: "NUMBER",
 
-	PACKAGE: "package",
-	VAR:     "var",
-	FUNC:    "func",
-	IF:      "if",
-	FOR:     "for",
+	PACKAGE:  "package",
+	IMPORT:   "import",
+	VAR:      "var",
+	FUNC:     "func",
+	RETURN:   "return",
+	IF:       "if",
+	ELSE:     "else",
+	FOR:      "for",
+	BREAK:    "break",
+	CONTINUE: "continue",
+	DEFER:    "defer",
 
 	ADD: "+",
 	SUB: "-",
@@ -111,12 +122,17 @@ func (tokType TokenType) String() string {
 }
 
 var keywords = map[string]TokenType{
-	"package": PACKAGE,
-	"var":     VAR,
-	"func":    FUNC,
-	"if":      IF,
-	"else":    ELSE,
-	"for":     FOR,
+	"package":  PACKAGE,
+	"import":   IMPORT,
+	"var":      VAR,
+	"func":     FUNC,
+	"return":   RETURN,
+	"if":       IF,
+	"else":     ELSE,
+	"for":      FOR,
+	"break":    BREAK,
+	"continue": CONTINUE,
+	"defer":    DEFER,
 }
 
 func Lookup(ident string) TokenType {

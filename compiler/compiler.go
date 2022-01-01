@@ -75,7 +75,7 @@ func (p *Compiler) genInit(w io.Writer, file *ast.File) {
 		if _, obj := p.scope.Lookup(g.Name.Name); obj != nil {
 			varName = obj.MangledName
 		} else {
-			panic(fmt.Sprintf("var %s undefined", g))
+			panic(fmt.Sprintf("var %s undefined", g.Name.Name))
 		}
 
 		fmt.Fprintf(w, "\tstore i32 %s, i32* %s\n", localName, varName)
