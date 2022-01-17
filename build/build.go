@@ -136,18 +136,18 @@ func (p *Context) build(filename string, src interface{}, outfile, goos, goarch 
 	}
 
 	const (
-		_a_out_ll     = "_a.out.ll"
-		_a_out_ll_o   = "_a.out.ll.o"
-		_a_builtin_ll = "_a_builtin.out.ll"
+		_a_out_ll         = "_a.out.ll"
+		_a_out_ll_o       = "_a.out.ll.o"
+		_a_out_builtin_ll = "_a.out.builtin.ll"
 	)
 	if !p.opt.Debug {
 		defer os.Remove(_a_out_ll)
 		defer os.Remove(_a_out_ll_o)
-		defer os.Remove(_a_builtin_ll)
+		defer os.Remove(_a_out_builtin_ll)
 	}
 
 	llBuiltin := builtin.GetBuiltinLL(p.opt.GOOS, p.opt.GOARCH)
-	err = os.WriteFile(_a_builtin_ll, []byte(llBuiltin), 0666)
+	err = os.WriteFile(_a_out_builtin_ll, []byte(llBuiltin), 0666)
 	if err != nil {
 		return nil, err
 	}
@@ -191,7 +191,7 @@ func (p *Context) build(filename string, src interface{}, outfile, goos, goarch 
 
 	cmd := exec.Command(
 		p.opt.Clang, "-Wno-override-module", "-o", outfile,
-		_a_out_ll, _a_builtin_ll,
+		_a_out_ll, _a_out_builtin_ll,
 	)
 
 	data, err := cmd.CombinedOutput()
