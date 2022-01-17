@@ -2,8 +2,8 @@
 
 µGo 是 Go 语言的真子集(不含标准库部分), 可以直接作为Go代码编译执行.
 
-- 安装 ugo: `go get github.com/chai2010/ugo`.
-- 实现原理: https://github.com/chai2010/ugo-compiler-book
+- 安装 ugo: `go get github.com/wa-lang/ugo`.
+- 实现原理: https://github.com/wa-lang/ugo-compiler-book
 
 ## 例子
 
