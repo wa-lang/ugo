@@ -1,0 +1,162 @@
+
+state 0
+	$accept: .top $end 
+
+	NUM  shift 5
+	'('  shift 6
+	.  error
+
+	expr  goto 2
+	mul  goto 3
+	primary  goto 4
+	top  goto 1
+
+state 1
+	$accept:  top.$end 
+
+	$end  accept
+	.  error
+
+
+state 2
+	top:  expr.    (1)
+	expr:  expr.'+' mul 
+	expr:  expr.'-' mul 
+
+	'+'  shift 7
+	'-'  shift 8
+	.  reduce 1 (src line 24)
+
+
+state 3
+	expr:  mul.    (2)
+	mul:  mul.'*' primary 
+	mul:  mul.'/' primary 
+
+	'*'  shift 9
+	'/'  shift 10
+	.  reduce 2 (src line 26)
+
+
+state 4
+	mul:  primary.    (5)
+
+	.  reduce 5 (src line 30)
+
+
+state 5
+	primary:  NUM.    (8)
+
+	.  reduce 8 (src line 34)
+
+
+state 6
+	primary:  '('.expr ')' 
+
+	NUM  shift 5
+	'('  shift 6
+	.  error
+
+	expr  goto 11
+	mul  goto 3
+	primary  goto 4
+
+state 7
+	expr:  expr '+'.mul 
+
+	NUM  shift 5
+	'('  shift 6
+	.  error
+
+	mul  goto 12
+	primary  goto 4
+
+state 8
+	expr:  expr '-'.mul 
+
+	NUM  shift 5
+	'('  shift 6
+	.  error
+
+	mul  goto 13
+	primary  goto 4
+
+state 9
+	mul:  mul '*'.primary 
+
+	NUM  shift 5
+	'('  shift 6
+	.  error
+
+	primary  goto 14
+
+state 10
+	mul:  mul '/'.primary 
+
+	NUM  shift 5
+	'('  shift 6
+	.  error
+
+	primary  goto 15
+
+state 11
+	expr:  expr.'+' mul 
+	expr:  expr.'-' mul 
+	primary:  '(' expr.')' 
+
+	'+'  shift 7
+	'-'  shift 8
+	')'  shift 16
+	.  error
+
+
+state 12
+	expr:  expr '+' mul.    (3)
+	mul:  mul.'*' primary 
+	mul:  mul.'/' primary 
+
+	'*'  shift 9
+	'/'  shift 10
+	.  reduce 3 (src line 27)
+
+
+state 13
+	expr:  expr '-' mul.    (4)
+	mul:  mul.'*' primary 
+	mul:  mul.'/' primary 
+
+	'*'  shift 9
+	'/'  shift 10
+	.  reduce 4 (src line 28)
+
+
+state 14
+	mul:  mul '*' primary.    (6)
+
+	.  reduce 6 (src line 31)
+
+
+state 15
+	mul:  mul '/' primary.    (7)
+
+	.  reduce 7 (src line 32)
+
+
+state 16
+	primary:  '(' expr ')'.    (9)
+
+	.  reduce 9 (src line 35)
+
+
+10 terminals, 5 nonterminals
+10 grammar rules, 17/16000 states
+0 shift/reduce, 0 reduce/reduce conflicts reported
+54 working sets used
+memory: parser 12/240000
+14 extra closures
+23 shift entries, 1 exceptions
+9 goto entries
+4 entries saved by goto default
+Optimizer space used: output 18/240000
+18 table entries, 0 zero
+maximum spread: 10, maximum offset: 10
