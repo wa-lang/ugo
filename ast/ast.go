@@ -70,6 +70,23 @@ type AssignStmt struct {
 	Value  []Expr          // 值
 }
 
+// IfStmt 表示一个 if 语句节点.
+type IfStmt struct {
+	If   token.Pos  // if 关键字的位置
+	Init Stmt       // 初始化语句
+	Cond Expr       // if 条件, *BinaryExpr
+	Body *BlockStmt // if 为真时对应的语句列表
+}
+
+// ForStmt 表示一个 for 语句节点.
+type ForStmt struct {
+	For  token.Pos  // for 关键字的位置
+	Init Stmt       // 初始化语句
+	Cond Expr       // 条件表达式
+	Post Stmt       // 迭代语句
+	Body *BlockStmt // 循环对应的语句列表
+}
+
 // Expr 表示一个表达式节点。
 type Expr interface {
 	Node

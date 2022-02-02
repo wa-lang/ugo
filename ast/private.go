@@ -16,6 +16,8 @@ var (
 	_ Stmt = (*BlockStmt)(nil)
 	_ Stmt = (*ExprStmt)(nil)
 	_ Stmt = (*AssignStmt)(nil)
+	_ Stmt = (*IfStmt)(nil)
+	_ Stmt = (*ForStmt)(nil)
 
 	_ Expr = (*Ident)(nil)
 	_ Expr = (*Number)(nil)
@@ -41,6 +43,14 @@ func (p *Func) Pos() token.Pos { return token.NoPos }
 func (p *Func) End() token.Pos { return token.NoPos }
 func (p *Func) node_type()     {}
 
+func (p *IfStmt) Pos() token.Pos { return p.If }
+func (p *IfStmt) End() token.Pos { return p.Body.End() }
+func (p *IfStmt) node_type()     {}
+
+func (p *ForStmt) Pos() token.Pos { return p.For }
+func (p *ForStmt) End() token.Pos { return p.Body.End() }
+func (p *ForStmt) node_type()     {}
+
 func (p *BlockStmt) node_type()  {}
 func (p *ExprStmt) node_type()   {}
 func (p *AssignStmt) node_type() {}
@@ -58,6 +68,8 @@ func (p *Func) stmt_type()    {}
 func (p *BlockStmt) stmt_type()  {}
 func (p *ExprStmt) stmt_type()   {}
 func (p *AssignStmt) stmt_type() {}
+func (p *IfStmt) stmt_type()     {}
+func (p *ForStmt) stmt_type()    {}
 
 func (p *Ident) expr_type()      {}
 func (p *Number) expr_type()     {}
