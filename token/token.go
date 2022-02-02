@@ -1,6 +1,7 @@
 package token
 
 import (
+	"fmt"
 	"strconv"
 )
 
@@ -19,11 +20,21 @@ const (
 	PACKAGE
 	VAR
 	FUNC
+	IF
+	FOR
 
 	ADD // +
 	SUB // -
 	MUL // *
 	DIV // /
+	MOD // %
+
+	EQL // ==
+	NEQ // !=
+	LSS // <
+	LEQ // <=
+	GTR // >
+	GEQ // >=
 
 	ASSIGN // =
 	DEFINE // :=
@@ -55,11 +66,21 @@ var tokens = [...]string{
 	PACKAGE: "package",
 	VAR:     "var",
 	FUNC:    "func",
+	IF:      "if",
+	FOR:     "for",
 
 	ADD: "+",
 	SUB: "-",
 	MUL: "*",
 	DIV: "/",
+	MOD: "%",
+
+	EQL: "==",
+	NEQ: "!=",
+	LSS: "<",
+	LEQ: "<=",
+	GTR: ">",
+	GEQ: ">=",
 
 	ASSIGN: "=",
 	DEFINE: ":=",
@@ -69,7 +90,12 @@ var tokens = [...]string{
 	LBRACE: "{",
 	RBRACE: "}",
 
+	COMMA:     ",",
 	SEMICOLON: ";",
+}
+
+func (tok Token) String() string {
+	return fmt.Sprintf("%v:%q", tok.Type, tok.Literal)
 }
 
 func (tokType TokenType) String() string {
@@ -87,6 +113,8 @@ var keywords = map[string]TokenType{
 	"package": PACKAGE,
 	"var":     VAR,
 	"func":    FUNC,
+	"if":      IF,
+	"for":     FOR,
 }
 
 func Lookup(ident string) TokenType {
@@ -98,10 +126,12 @@ func Lookup(ident string) TokenType {
 
 func (op TokenType) Precedence() int {
 	switch op {
-	case ADD, SUB:
+	case EQL, NEQ, LSS, LEQ, GTR, GEQ:
 		return 1
-	case MUL, DIV:
+	case ADD, SUB:
 		return 2
+	case MUL, DIV, MOD:
+		return 3
 	}
 	return 0
 }
