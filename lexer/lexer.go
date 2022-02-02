@@ -147,9 +147,43 @@ func (p *Lexer) run() (tokens []token.Token) {
 					}
 				}
 			}
+		case r == '%': // %
+			p.emit(token.MOD)
 
 		case r == '=': // =, ==
-			p.emit(token.ASSIGN)
+			switch p.src.Read() {
+			case '=':
+				p.emit(token.EQL)
+			default:
+				p.src.Unread()
+				p.emit(token.ASSIGN)
+			}
+
+		case r == '!': // !=
+			switch p.src.Read() {
+			case '=':
+				p.emit(token.NEQ)
+			default:
+				p.errorf("unrecognized character: %#U", r)
+			}
+
+		case r == '<': // <, <=
+			switch p.src.Read() {
+			case '=':
+				p.emit(token.LEQ)
+			default:
+				p.src.Unread()
+				p.emit(token.LSS)
+			}
+
+		case r == '>': // >, >=
+			switch p.src.Read() {
+			case '=':
+				p.emit(token.GEQ)
+			default:
+				p.src.Unread()
+				p.emit(token.GTR)
+			}
 
 		case r == ':': // :, :=
 			switch p.src.Read() {
