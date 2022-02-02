@@ -1,5 +1,5 @@
 default:
-	go run main.go -debug=false run ./_examples/hello.ugo
+	go run main.go run ./_examples/hello.ugo
 
 wasm:
 	go run main.go -goos=wasm -debug=false asm ./_examples/hello.ugo
