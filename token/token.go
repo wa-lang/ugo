@@ -20,6 +20,7 @@ const (
 	PACKAGE
 	VAR
 	FUNC
+	RETURN
 	IF
 	FOR
 
@@ -66,6 +67,7 @@ var tokens = [...]string{
 	PACKAGE: "package",
 	VAR:     "var",
 	FUNC:    "func",
+	RETURN:  "return",
 	IF:      "if",
 	FOR:     "for",
 
@@ -113,6 +115,7 @@ var keywords = map[string]TokenType{
 	"package": PACKAGE,
 	"var":     VAR,
 	"func":    FUNC,
+	"return":  RETURN,
 	"if":      IF,
 	"for":     FOR,
 }

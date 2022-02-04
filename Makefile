@@ -1,5 +1,5 @@
 default:
-	go run main.go asm ./_examples/hello.ugo
+	go run main.go ast ./_examples/fibonacci.ugo
 
 run:
 	go run main.go run ./_examples/prime.ugo

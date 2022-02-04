@@ -41,7 +41,28 @@ type Func struct {
 	FuncPos token.Pos
 	NamePos token.Pos
 	Name    string
+	Type    *FuncType
 	Body    *BlockStmt
+}
+
+// 函数类型
+type FuncType struct {
+	Func    token.Pos
+	Params  *FieldList
+	Results *FieldList
+}
+
+// 参数/属性 列表
+type FieldList struct {
+	Opening token.Pos
+	List    []*Field
+	Closing token.Pos
+}
+
+// 参数/属性
+type Field struct {
+	Names []*Ident // 名称列表, 多个名字共享一个类型
+	Type  Expr     // 类型
 }
 
 // 块语句
@@ -85,6 +106,12 @@ type ForStmt struct {
 	Cond Expr       // 条件表达式
 	Post Stmt       // 迭代语句
 	Body *BlockStmt // 循环对应的语句列表
+}
+
+// return 语句
+type ReturnStmt struct {
+	ResultPos token.Pos
+	Results   []Expr
 }
 
 // Expr 表示一个表达式节点。
