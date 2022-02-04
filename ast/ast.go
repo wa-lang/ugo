@@ -110,8 +110,8 @@ type ForStmt struct {
 
 // return 语句
 type ReturnStmt struct {
-	ResultPos token.Pos
-	Results   []Expr
+	Return token.Pos
+	Result Expr
 }
 
 // Expr 表示一个表达式节点。

@@ -98,7 +98,7 @@ func (p *Lexer) run() (tokens []token.Token) {
 
 			if len(p.tokens) > 0 {
 				switch p.tokens[len(p.tokens)-1].Type {
-				case token.RPAREN, token.IDENT, token.NUMBER:
+				case token.RPAREN, token.IDENT, token.NUMBER, token.RETURN:
 					p.emit(token.SEMICOLON)
 				}
 			}

@@ -21,6 +21,8 @@ func (p *Parser) parseStmt() ast.Stmt {
 	case token.RBRACE: // }
 		return nil
 
+	case token.RETURN:
+		return p.parseStmt_return()
 	case token.VAR:
 		return p.parseStmt_var()
 	case token.IF:

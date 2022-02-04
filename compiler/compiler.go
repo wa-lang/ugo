@@ -155,6 +155,9 @@ func (p *Compiler) compileStmt(w io.Writer, stmt ast.Stmt) {
 	case *ast.AssignStmt:
 		p.compileStmt_assign(w, stmt)
 
+	case *ast.ReturnStmt:
+		p.compileStmt_return(w, stmt)
+
 	case *ast.IfStmt:
 		p.compileStmt_if(w, stmt)
 
@@ -322,6 +325,14 @@ func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
 
 	default:
 		panic(fmt.Sprintf("unknown: %[1]T, %[1]v", expr))
+	}
+}
+
+func (p *Compiler) compileStmt_return(w io.Writer, stmt *ast.ReturnStmt) {
+	if stmt.Result != nil {
+		fmt.Fprintf(w, "\tret i32 %v\n", p.compileExpr(w, stmt.Result))
+	} else {
+		fmt.Fprintf(w, "\tret i32 0\n")
 	}
 }
 

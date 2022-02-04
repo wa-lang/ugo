@@ -16,6 +16,7 @@ var (
 	_ Stmt = (*BlockStmt)(nil)
 	_ Stmt = (*ExprStmt)(nil)
 	_ Stmt = (*AssignStmt)(nil)
+	_ Stmt = (*ReturnStmt)(nil)
 	_ Stmt = (*IfStmt)(nil)
 	_ Stmt = (*ForStmt)(nil)
 
@@ -43,6 +44,10 @@ func (p *Func) Pos() token.Pos { return token.NoPos }
 func (p *Func) End() token.Pos { return token.NoPos }
 func (p *Func) node_type()     {}
 
+func (p *ReturnStmt) Pos() token.Pos { return p.Return }
+func (p *ReturnStmt) End() token.Pos { return p.Result.End() }
+func (p *ReturnStmt) node_type()     {}
+
 func (p *IfStmt) Pos() token.Pos { return p.If }
 func (p *IfStmt) End() token.Pos { return p.Body.End() }
 func (p *IfStmt) node_type()     {}
@@ -68,6 +73,7 @@ func (p *Func) stmt_type()    {}
 func (p *BlockStmt) stmt_type()  {}
 func (p *ExprStmt) stmt_type()   {}
 func (p *AssignStmt) stmt_type() {}
+func (p *ReturnStmt) stmt_type() {}
 func (p *IfStmt) stmt_type()     {}
 func (p *ForStmt) stmt_type()    {}
 
