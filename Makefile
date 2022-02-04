@@ -8,3 +8,4 @@ dev:
 	go run main.go run ./_examples/prime.ugo
 
 clean:
+	-rm *.out*

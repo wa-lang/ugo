@@ -1,0 +1,14 @@
+package main
+
+func main() {
+	for i := 1; i < 10; i = i + 1 {
+		println(fib(i))
+	}
+}
+
+func fib(n int) int {
+	if n > 2 {
+		return fib(n-1) + fib(n-2)
+	}
+	return 1
+}
