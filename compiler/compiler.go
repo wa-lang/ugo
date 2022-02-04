@@ -333,51 +333,40 @@ func (p *Compiler) compileStmt_if(w io.Writer, stmt *ast.IfStmt) {
 	ifInit := p.genLabelId("if.init.line" + ifPos)
 	ifCond := p.genLabelId("if.cond.line" + ifPos)
 	ifBody := p.genLabelId("if.body.line" + ifPos)
-	ifElse := p.genLabelId("if.else.line" + ifPos)
 	ifEnd := p.genLabelId("if.end.line" + ifPos)
 
-	// br if.init
+	// br if
 	fmt.Fprintf(w, "\tbr label %%%s\n", ifInit)
 
 	// if.init
-	fmt.Fprintf(w, "\n%s:\n", ifInit)
+	{
+		fmt.Fprintf(w, "\n%s:\n", ifInit)
+		if stmt.Init != nil {
+			p.compileStmt(w, stmt.Init)
+		}
+	}
+
+	// br if.cond
+	fmt.Fprintf(w, "\tbr label %%%s\n", ifCond)
+
+	// if.cond
+	{
+		fmt.Fprintf(w, "\n%s:\n", ifCond)
+		condValue := p.compileExpr(w, stmt.Cond)
+		fmt.Fprintf(w, "\tbr i1 %s , label %%%s, label %%%s\n", condValue, ifBody, ifEnd)
+	}
+
+	// if.body
 	func() {
 		defer p.restoreScope(p.scope)
 		p.enterScope()
 
-		if stmt.Init != nil {
-			p.compileStmt(w, stmt.Init)
-			fmt.Fprintf(w, "\tbr label %%%s\n", ifCond)
-		} else {
-			fmt.Fprintf(w, "\tbr label %%%s\n", ifCond)
-		}
-
-		// if.cond
-		{
-			fmt.Fprintf(w, "\n%s:\n", ifCond)
-			condValue := p.compileExpr(w, stmt.Cond)
-			fmt.Fprintf(w, "\tbr i1 %s , label %%%s, label %%%s\n", condValue, ifBody, ifEnd)
-		}
-
-		// if.body
-		func() {
-			defer p.restoreScope(p.scope)
-			p.enterScope()
-
-			fmt.Fprintf(w, "\n%s:\n", ifBody)
-			p.compileStmt(w, stmt.Body)
-			fmt.Fprintf(w, "\tbr label %%%s\n", ifEnd)
-		}()
-
-		// if.else
-		func() {
-			defer p.restoreScope(p.scope)
-			p.enterScope()
-
-			fmt.Fprintf(w, "\n%s:\n", ifElse)
-			fmt.Fprintf(w, "\tbr label %%%s\n", ifEnd)
-		}()
+		fmt.Fprintf(w, "\n%s:\n", ifBody)
+		p.compileStmt(w, stmt.Body)
 	}()
+
+	// br if.end
+	fmt.Fprintf(w, "\tbr label %%%s\n", ifEnd)
 
 	// end
 	fmt.Fprintf(w, "\n%s:\n", ifEnd)
@@ -398,48 +387,48 @@ func (p *Compiler) compileStmt_for(w io.Writer, stmt *ast.ForStmt) {
 	fmt.Fprintf(w, "\tbr label %%%s\n", forInit)
 
 	// for.init
+	fmt.Fprintf(w, "\n%s:\n", forInit)
+	if stmt.Init != nil {
+		p.compileStmt(w, stmt.Init)
+	}
+
+	// br for.cond
+	fmt.Fprintf(w, "\tbr label %%%s\n", forCond)
+
+	// for.cond
+	fmt.Fprintf(w, "\n%s:\n", forCond)
+	if stmt.Cond != nil {
+		condValue := p.compileExpr(w, stmt.Cond)
+		fmt.Fprintf(w, "\tbr i1 %s , label %%%s, label %%%s\n", condValue, forBody, forEnd)
+	} else {
+		fmt.Fprintf(w, "\tbr label %%%s\n", forBody)
+	}
+
+	// for.body
 	func() {
 		defer p.restoreScope(p.scope)
 		p.enterScope()
 
-		fmt.Fprintf(w, "\n%s:\n", forInit)
-		if stmt.Init != nil {
-			p.compileStmt(w, stmt.Init)
-			fmt.Fprintf(w, "\tbr label %%%s\n", forCond)
-		} else {
-			fmt.Fprintf(w, "\tbr label %%%s\n", forCond)
-		}
-
-		// for.cond
-		fmt.Fprintf(w, "\n%s:\n", forCond)
-		if stmt.Cond != nil {
-			condValue := p.compileExpr(w, stmt.Cond)
-			fmt.Fprintf(w, "\tbr i1 %s , label %%%s, label %%%s\n", condValue, forBody, forEnd)
-		} else {
-			fmt.Fprintf(w, "\tbr label %%%s\n", forBody)
-		}
-
-		// for.body
-		func() {
-			defer p.restoreScope(p.scope)
-			p.enterScope()
-
-			fmt.Fprintf(w, "\n%s:\n", forBody)
-			p.compileStmt(w, stmt.Body)
-			fmt.Fprintf(w, "\tbr label %%%s\n", forPost)
-		}()
-
-		// for.post
-		{
-			fmt.Fprintf(w, "\n%s:\n", forPost)
-			if stmt.Post != nil {
-				p.compileStmt(w, stmt.Post)
-				fmt.Fprintf(w, "\tbr label %%%s\n", forCond)
-			} else {
-				fmt.Fprintf(w, "\tbr label %%%s\n", forCond)
-			}
-		}
+		fmt.Fprintf(w, "\n%s:\n", forBody)
+		p.compileStmt(w, stmt.Body)
 	}()
+
+	// br for.post
+	fmt.Fprintf(w, "\tbr label %%%s\n", forPost)
+
+	// for.post
+	{
+		fmt.Fprintf(w, "\n%s:\n", forPost)
+		if stmt.Post != nil {
+			p.compileStmt(w, stmt.Post)
+		}
+
+		// br for.cond
+		fmt.Fprintf(w, "\tbr label %%%s\n", forCond)
+	}
+
+	// br for.end
+	fmt.Fprintf(w, "\tbr label %%%s\n", forEnd)
 
 	// end
 	fmt.Fprintf(w, "\n%s:\n", forEnd)
