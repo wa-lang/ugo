@@ -11,8 +11,14 @@ func (p *Parser) parseStmt_return() *ast.ReturnStmt {
 	retStmt := &ast.ReturnStmt{
 		Return: tokReturn.Pos,
 	}
-	if _, ok := p.AcceptToken(token.SEMICOLON); !ok {
+	if _, ok := p.AcceptToken(
+		token.SEMICOLON, // ;
+		token.LBRACE,    // {
+		token.RBRACE,    // }
+	); !ok {
 		retStmt.Result = p.parseExpr()
+	} else {
+		p.UnreadToken()
 	}
 
 	return retStmt
