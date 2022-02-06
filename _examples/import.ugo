@@ -1,0 +1,9 @@
+package main
+
+import "builtin"
+import pkg "builtin"
+
+func main() {
+	builtin.println(42)
+	pkg.println(43)
+}

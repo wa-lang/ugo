@@ -99,8 +99,12 @@ func (p *Parser) parseExpr_primary() ast.Expr {
 
 func (p *Parser) parseExpr_call() *ast.CallExpr {
 	tokIdent := p.MustAcceptToken(token.IDENT)
+
+	var arg0 ast.Expr
 	tokLparen := p.MustAcceptToken(token.LPAREN)
-	arg0 := p.parseExpr()
+	if tok := p.PeekToken(); tok.Type != token.RPAREN {
+		arg0 = p.parseExpr()
+	}
 	tokRparen := p.MustAcceptToken(token.RPAREN)
 
 	return &ast.CallExpr{
@@ -114,10 +118,34 @@ func (p *Parser) parseExpr_call() *ast.CallExpr {
 	}
 }
 
-func (p *Parser) parseExpr_selector() *ast.SelectorExpr {
+func (p *Parser) parseExpr_selector() ast.Expr {
 	tokX := p.MustAcceptToken(token.IDENT)
 	_ = p.MustAcceptToken(token.PERIOD)
 	tokSel := p.MustAcceptToken(token.IDENT)
+
+	// pkg.fn(...)
+	if nextTok := p.PeekToken(); nextTok.Type == token.LPAREN {
+		var arg0 ast.Expr
+		tokLparen := p.MustAcceptToken(token.LPAREN)
+		if tok := p.PeekToken(); tok.Type != token.RPAREN {
+			arg0 = p.parseExpr()
+		}
+		tokRparen := p.MustAcceptToken(token.RPAREN)
+
+		return &ast.CallExpr{
+			Pkg: &ast.Ident{
+				NamePos: tokX.Pos,
+				Name:    tokX.Literal,
+			},
+			FuncName: &ast.Ident{
+				NamePos: tokSel.Pos,
+				Name:    tokSel.Literal,
+			},
+			Lparen: tokLparen.Pos,
+			Args:   []ast.Expr{arg0},
+			Rparen: tokRparen.Pos,
+		}
+	}
 
 	return &ast.SelectorExpr{
 		X: &ast.Ident{

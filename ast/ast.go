@@ -163,6 +163,7 @@ type ParenExpr struct {
 
 // CallExpr 表示一个函数调用
 type CallExpr struct {
+	Pkg      *Ident    // 对应的包, 当前包为 nil
 	FuncName *Ident    // 函数名字
 	Lparen   token.Pos // '(' 位置
 	Args     []Expr    // 调用参数列表

@@ -88,6 +88,24 @@ func (p *Compiler) compileFile(w io.Writer, file *ast.File) {
 	defer p.restoreScope(p.scope)
 	p.enterScope()
 
+	// import
+	for _, x := range file.Imports {
+		var mangledName = fmt.Sprintf("@ugo_%s", x.Path)
+		if x.Name != nil {
+			p.scope.Insert(&Object{
+				Name:        x.Name.Name,
+				MangledName: mangledName,
+				Node:        x,
+			})
+		} else {
+			p.scope.Insert(&Object{
+				Name:        x.Path,
+				MangledName: mangledName,
+				Node:        x,
+			})
+		}
+	}
+
 	// global vars
 	for _, g := range file.Globals {
 		var mangledName = fmt.Sprintf("@ugo_%s_%s", file.Pkg.Name, g.Name.Name)
@@ -373,7 +391,13 @@ func (p *Compiler) compileExpr(w io.Writer, expr ast.Expr) (localName string) {
 		return p.compileExpr(w, expr.X)
 	case *ast.CallExpr:
 		var fnName string
-		if _, obj := p.scope.Lookup(expr.FuncName.Name); obj != nil {
+		if expr.Pkg != nil {
+			if _, obj := p.scope.Lookup(expr.Pkg.Name); obj != nil {
+				fnName = obj.MangledName + "_" + expr.FuncName.Name
+			} else {
+				panic(fmt.Sprintf("func %s.%s undefined", expr.Pkg.Name, expr.FuncName.Name))
+			}
+		} else if _, obj := p.scope.Lookup(expr.FuncName.Name); obj != nil {
 			fnName = obj.MangledName
 		} else {
 			panic(fmt.Sprintf("func %s undefined", expr.FuncName.Name))
