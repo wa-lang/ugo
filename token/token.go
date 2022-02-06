@@ -48,6 +48,7 @@ const (
 	RBRACE // }
 
 	COMMA     // ,
+	PERIOD    // .
 	SEMICOLON // ;
 )
 
@@ -97,6 +98,7 @@ var tokens = [...]string{
 	RBRACE: "}",
 
 	COMMA:     ",",
+	PERIOD:    ".",
 	SEMICOLON: ";",
 }
 

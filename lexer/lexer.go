@@ -211,6 +211,8 @@ func (p *Lexer) run() (tokens []token.Token) {
 
 		case r == ',':
 			p.emit(token.COMMA)
+		case r == '.':
+			p.emit(token.PERIOD)
 		case r == ';':
 			p.emit(token.SEMICOLON)
 

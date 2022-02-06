@@ -26,6 +26,7 @@ var (
 	_ Expr = (*UnaryExpr)(nil)
 	_ Expr = (*ParenExpr)(nil)
 	_ Expr = (*CallExpr)(nil)
+	_ Expr = (*SelectorExpr)(nil)
 )
 
 func (p *File) Pos() token.Pos { return token.NoPos }
@@ -60,12 +61,13 @@ func (p *BlockStmt) node_type()  {}
 func (p *ExprStmt) node_type()   {}
 func (p *AssignStmt) node_type() {}
 
-func (p *Ident) node_type()      {}
-func (p *Number) node_type()     {}
-func (p *BinaryExpr) node_type() {}
-func (p *UnaryExpr) node_type()  {}
-func (p *ParenExpr) node_type()  {}
-func (p *CallExpr) node_type()   {}
+func (p *Ident) node_type()        {}
+func (p *Number) node_type()       {}
+func (p *BinaryExpr) node_type()   {}
+func (p *UnaryExpr) node_type()    {}
+func (p *ParenExpr) node_type()    {}
+func (p *CallExpr) node_type()     {}
+func (p *SelectorExpr) node_type() {}
 
 func (p *VarSpec) stmt_type() {}
 func (p *Func) stmt_type()    {}
@@ -77,31 +79,34 @@ func (p *ReturnStmt) stmt_type() {}
 func (p *IfStmt) stmt_type()     {}
 func (p *ForStmt) stmt_type()    {}
 
-func (p *Ident) expr_type()      {}
-func (p *Number) expr_type()     {}
-func (p *BinaryExpr) expr_type() {}
-func (p *UnaryExpr) expr_type()  {}
-func (p *ParenExpr) expr_type()  {}
-func (p *CallExpr) expr_type()   {}
+func (p *Ident) expr_type()        {}
+func (p *Number) expr_type()       {}
+func (p *BinaryExpr) expr_type()   {}
+func (p *UnaryExpr) expr_type()    {}
+func (p *ParenExpr) expr_type()    {}
+func (p *CallExpr) expr_type()     {}
+func (p *SelectorExpr) expr_type() {}
 
 func (p *BlockStmt) Pos() token.Pos  { return token.NoPos }
 func (p *ExprStmt) Pos() token.Pos   { return token.NoPos }
 func (p *AssignStmt) Pos() token.Pos { return token.NoPos }
 
-func (p *Ident) Pos() token.Pos      { return token.NoPos }
-func (p *Number) Pos() token.Pos     { return token.NoPos }
-func (p *BinaryExpr) Pos() token.Pos { return token.NoPos }
-func (p *UnaryExpr) Pos() token.Pos  { return token.NoPos }
-func (p *ParenExpr) Pos() token.Pos  { return token.NoPos }
-func (p *CallExpr) Pos() token.Pos   { return token.NoPos }
+func (p *Ident) Pos() token.Pos        { return token.NoPos }
+func (p *Number) Pos() token.Pos       { return token.NoPos }
+func (p *BinaryExpr) Pos() token.Pos   { return token.NoPos }
+func (p *UnaryExpr) Pos() token.Pos    { return token.NoPos }
+func (p *ParenExpr) Pos() token.Pos    { return token.NoPos }
+func (p *CallExpr) Pos() token.Pos     { return token.NoPos }
+func (p *SelectorExpr) Pos() token.Pos { return token.NoPos }
 
 func (p *BlockStmt) End() token.Pos  { return token.NoPos }
 func (p *ExprStmt) End() token.Pos   { return token.NoPos }
 func (p *AssignStmt) End() token.Pos { return token.NoPos }
 
-func (p *Ident) End() token.Pos      { return token.NoPos }
-func (p *Number) End() token.Pos     { return token.NoPos }
-func (p *BinaryExpr) End() token.Pos { return token.NoPos }
-func (p *UnaryExpr) End() token.Pos  { return token.NoPos }
-func (p *ParenExpr) End() token.Pos  { return token.NoPos }
-func (p *CallExpr) End() token.Pos   { return token.NoPos }
+func (p *Ident) End() token.Pos        { return token.NoPos }
+func (p *Number) End() token.Pos       { return token.NoPos }
+func (p *BinaryExpr) End() token.Pos   { return token.NoPos }
+func (p *UnaryExpr) End() token.Pos    { return token.NoPos }
+func (p *ParenExpr) End() token.Pos    { return token.NoPos }
+func (p *CallExpr) End() token.Pos     { return token.NoPos }
+func (p *SelectorExpr) End() token.Pos { return token.NoPos }

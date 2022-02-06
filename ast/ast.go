@@ -168,3 +168,9 @@ type CallExpr struct {
 	Args     []Expr    // 调用参数列表
 	Rparen   token.Pos // ')' 位置
 }
+
+// SelectorExpr 表示 x.Name 属性选择表达式
+type SelectorExpr struct {
+	X   Expr
+	Sel *Ident
+}

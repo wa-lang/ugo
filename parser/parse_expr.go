@@ -73,6 +73,8 @@ func (p *Parser) parseExpr_primary() ast.Expr {
 		switch nextTok.Type {
 		case token.LPAREN:
 			return p.parseExpr_call()
+		case token.PERIOD:
+			return p.parseExpr_selector()
 		default:
 			p.MustAcceptToken(token.IDENT)
 			return &ast.Ident{
@@ -109,5 +111,22 @@ func (p *Parser) parseExpr_call() *ast.CallExpr {
 		Lparen: tokLparen.Pos,
 		Args:   []ast.Expr{arg0},
 		Rparen: tokRparen.Pos,
+	}
+}
+
+func (p *Parser) parseExpr_selector() *ast.SelectorExpr {
+	tokX := p.MustAcceptToken(token.IDENT)
+	_ = p.MustAcceptToken(token.PERIOD)
+	tokSel := p.MustAcceptToken(token.IDENT)
+
+	return &ast.SelectorExpr{
+		X: &ast.Ident{
+			NamePos: tokX.Pos,
+			Name:    tokX.Literal,
+		},
+		Sel: &ast.Ident{
+			NamePos: tokSel.Pos,
+			Name:    tokSel.Literal,
+		},
 	}
 }
