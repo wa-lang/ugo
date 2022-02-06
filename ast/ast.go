@@ -47,9 +47,9 @@ type Func struct {
 
 // 函数类型
 type FuncType struct {
-	Func    token.Pos
-	Params  *FieldList
-	Results *FieldList
+	Func   token.Pos
+	Params *FieldList
+	Result *Ident
 }
 
 // 参数/属性 列表
@@ -61,8 +61,8 @@ type FieldList struct {
 
 // 参数/属性
 type Field struct {
-	Names []*Ident // 名称列表, 多个名字共享一个类型
-	Type  Expr     // 类型
+	Name *Ident // 名称
+	Type *Ident // 类型
 }
 
 // 块语句

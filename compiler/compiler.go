@@ -88,6 +88,7 @@ func (p *Compiler) compileFile(w io.Writer, file *ast.File) {
 	defer p.restoreScope(p.scope)
 	p.enterScope()
 
+	// global vars
 	for _, g := range file.Globals {
 		var mangledName = fmt.Sprintf("@ugo_%s_%s", file.Pkg.Name, g.Name.Name)
 		p.scope.Insert(&Object{
@@ -100,6 +101,17 @@ func (p *Compiler) compileFile(w io.Writer, file *ast.File) {
 	if len(file.Globals) != 0 {
 		fmt.Fprintln(w)
 	}
+
+	// global funcs
+	for _, fn := range file.Funcs {
+		var mangledName = fmt.Sprintf("@ugo_%s_%s", file.Pkg.Name, fn.Name)
+		p.scope.Insert(&Object{
+			Name:        fn.Name,
+			MangledName: mangledName,
+			Node:        fn,
+		})
+	}
+
 	for _, fn := range file.Funcs {
 		p.compileFunc(w, file, fn)
 	}
@@ -119,14 +131,64 @@ func (p *Compiler) compileFunc(w io.Writer, file *ast.File, fn *ast.Func) {
 		Node:        fn,
 	})
 
-	if fn.Body == nil {
-		fmt.Fprintf(w, "declare i32 @ugo_%s_%s()\n", file.Pkg.Name, fn.Name)
-		return
+	// args
+	var argNameList []string
+	for _, arg := range fn.Type.Params.List {
+		var mangledName = fmt.Sprintf("%%local_%s.pos.%d", arg.Name.Name, arg.Name.NamePos)
+		argNameList = append(argNameList, mangledName)
 	}
-	fmt.Fprintln(w)
 
-	fmt.Fprintf(w, "define i32 @ugo_%s_%s() {\n", file.Pkg.Name, fn.Name)
-	p.compileStmt(w, fn.Body)
+	// func signature
+	if fn.Body == nil {
+		fmt.Fprintf(w, "declare i32 @ugo_%s_%s(", file.Pkg.Name, fn.Name)
+		for i, s := range argNameList {
+			if i > 0 {
+				fmt.Fprint(w, ", ")
+			}
+			fmt.Fprintf(w, "i32 %s", s)
+		}
+		fmt.Fprintln(w, ")")
+		return
+	} else {
+		fmt.Fprintln(w)
+		fmt.Fprintf(w, "define i32 @ugo_%s_%s(", file.Pkg.Name, fn.Name)
+		for i, s := range argNameList {
+			if i > 0 {
+				fmt.Fprint(w, ", ")
+			}
+			fmt.Fprintf(w, "i32 %s.arg%d", s, i)
+		}
+		fmt.Fprintln(w, ") {")
+	}
+
+	// fn body
+	func() {
+		// args+body scope
+		defer p.restoreScope(p.scope)
+		p.enterScope()
+
+		// args
+		for i, arg := range fn.Type.Params.List {
+			var argRegName = fmt.Sprintf("%s.arg%d", argNameList[i], i)
+			var mangledName = argNameList[i]
+			p.scope.Insert(&Object{
+				Name:        arg.Name.Name,
+				MangledName: mangledName,
+				Node:        fn,
+			})
+
+			fmt.Fprintf(w, "\t%s = alloca i32, align 4\n", mangledName)
+			fmt.Fprintf(
+				w, "\tstore i32 %s, i32* %s\n",
+				argRegName, mangledName,
+			)
+		}
+
+		// body
+		for _, x := range fn.Body.List {
+			p.compileStmt(w, x)
+		}
+	}()
 	fmt.Fprintln(w, "\tret i32 0")
 	fmt.Fprintln(w, "}")
 }
