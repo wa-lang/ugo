@@ -123,6 +123,12 @@ func (p *Lexer) run() (tokens []token.Token) {
 			p.src.AcceptRun(digits)
 			p.emit(token.NUMBER)
 
+		case r == '"': // "abc\n"
+			p.lexQuote()
+
+		case r == '`': // `abc`
+			p.lexRawQuote()
+
 		case r == '+': // +, +=, ++
 			p.emit(token.ADD)
 		case r == '-': // -, -=, --
@@ -210,6 +216,34 @@ func (p *Lexer) run() (tokens []token.Token) {
 
 		default:
 			p.errorf("unrecognized character: %#U", r)
+			return
+		}
+	}
+}
+
+func (l *Lexer) lexQuote() {
+	for {
+		switch l.src.Read() {
+		case rune(token.EOF):
+			l.errorf("unterminated quoted string")
+			return
+		case '\\':
+			l.src.Read()
+		case '"':
+			l.emit(token.STRING)
+			return
+		}
+	}
+}
+
+func (l *Lexer) lexRawQuote() {
+	for {
+		switch l.src.Read() {
+		case rune(token.EOF):
+			l.errorf("unterminated raw quoted string")
+			return
+		case '`':
+			l.emit(token.STRING)
 			return
 		}
 	}

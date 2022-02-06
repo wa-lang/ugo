@@ -16,9 +16,10 @@ type File struct {
 	Filename string // 文件名
 	Source   string // 源代码
 
-	Pkg     *PackageSpec // 包信息
-	Globals []*VarSpec   // 全局变量
-	Funcs   []*Func      // 函数列表
+	Pkg     *PackageSpec  // 包信息
+	Imports []*ImportSpec // 导入包信息
+	Globals []*VarSpec    // 全局变量
+	Funcs   []*Func       // 函数列表
 }
 
 // 包信息
@@ -26,6 +27,13 @@ type PackageSpec struct {
 	PkgPos  token.Pos // package 关键字位置
 	NamePos token.Pos // 包名位置
 	Name    string    // 包名
+}
+
+// ImportSpec 表示一个导入包
+type ImportSpec struct {
+	ImportPos token.Pos
+	Name      *Ident
+	Path      string
 }
 
 // 变量信息

@@ -23,6 +23,9 @@ func (p *Parser) parseFile() {
 		case token.SEMICOLON:
 			p.AcceptTokenList(token.SEMICOLON)
 
+		case token.IMPORT:
+			p.file.Imports = append(p.file.Imports, p.parseImport())
+
 		case token.VAR:
 			p.file.Globals = append(p.file.Globals, p.parseStmt_var())
 		case token.FUNC:

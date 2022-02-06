@@ -16,8 +16,10 @@ const (
 
 	IDENT
 	NUMBER
+	STRING
 
 	PACKAGE
+	IMPORT
 	VAR
 	FUNC
 	RETURN
@@ -63,8 +65,10 @@ var tokens = [...]string{
 
 	IDENT:  "IDENT",
 	NUMBER: "NUMBER",
+	STRING: "STRING",
 
 	PACKAGE: "package",
+	IMPORT:  "import",
 	VAR:     "var",
 	FUNC:    "func",
 	RETURN:  "return",
@@ -113,6 +117,7 @@ func (tokType TokenType) String() string {
 
 var keywords = map[string]TokenType{
 	"package": PACKAGE,
+	"import":  IMPORT,
 	"var":     VAR,
 	"func":    FUNC,
 	"return":  RETURN,
