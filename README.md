@@ -1,10 +1,5 @@
 # µGo 编程语言
 
-- *KusonStack一站式可编程配置技术栈: https://github.com/KusionStack/kusion*
-- *KCL配置编程语言: https://github.com/KusionStack/KCLVM*
-
----
-
 µGo 是 Go 语言的真子集(不含标准库部分), 可以直接作为Go代码编译执行.
 
 - 安装 ugo: `go get github.com/wa-lang/ugo`.
